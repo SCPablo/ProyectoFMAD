@@ -10,10 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 
 Cargamos las librerías
-```{r, EVAL = FALSE}
+```{r, echo = FALSE, warning=FALSE,message=FALSE}
 library(tidyverse)
-library(readr)
-
 ```
 
 Leemos los datos
@@ -31,4 +29,4 @@ You can also embed plots, for example:
 plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Prueba
