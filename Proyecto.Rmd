@@ -17,6 +17,7 @@ library(tidyverse)
 Leemos los datos
 ```{r}
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
+head(datos)
 ```
 
 
@@ -30,3 +31,14 @@ plot(pressure)
 ```
 
 Prueba
+# TODO Preprocesamiento de los datos
+# TODO Visualización de los datos
+# TODO Buscar la relación posible entre distintas variable
+# TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
+# TODO Convertir a booleana la variable target
+
+Preprocesamiento de los datos
+```{r}
+
+```
+
