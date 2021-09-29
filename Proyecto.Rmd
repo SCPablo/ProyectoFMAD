@@ -17,7 +17,6 @@ library(tidyverse)
 Leemos los datos
 ```{r}
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
-head(datos)
 ```
 
 
@@ -30,8 +29,27 @@ You can also embed plots, for example:
 plot(pressure)
 ```
 
-Prueba
+# TODO Resumen de datos
+```{r}
+head(datos)
+cat(cat(cat(cat(print("El conjunto de datos tiene"), nrow(datos)), "filas y"), ncol(datos)), "columnas")
+```
+Hay 2 columnas al final: "Z_CostContact" y "Z_Revenue" que no sé qué son.
+
+
+
 # TODO Preprocesamiento de los datos
+En esta sección haría los siguientes cambios. Para dejar los datos limpios cambiaría 2 grupos de columnas.
+El primer grupo de columnas serían "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el lugar por donde se han hecho las ofertas a cada cliente.
+El segundo grupo son: "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5" que indican si el cliente aceptó la oferta i-ésima.
+Habría que hacer algo con la columna "Response" que indica si el cliente aceptó la última oferta.
+Con todas estas columnas habría que pivotar y dejar una única columa que sea en el primer grupo: lugar, y en el segundo una columna que sea la oferta que se aceptó.
+Si no se pone la oferta i indica que no se aceptó.
+
+
+Aquí tengo mis dudas. Con las siguiente columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" que marcan la cantidad de dinero que se ha gastado cada cliente en un tipo de producto.
+
+
 # TODO Visualización de los datos
 # TODO Buscar la relación posible entre distintas variable
 # TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
