@@ -1,13 +1,24 @@
 ---
-title: "Proyecto FMAD"
-output: html_document
+title: "Proyecto"
+subtitle: ICAI. Máster en Big Data. Fundamentos Matemáticos del Análisis de Datos
+  (FMAD).
+date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
+linestretch: "1.25"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+\newpage
+\tableofcontents
+\newpage
+
+
+# Introducción
 
 Cargamos las librerías
 ```{r, echo = FALSE, warning=FALSE,message=FALSE}
