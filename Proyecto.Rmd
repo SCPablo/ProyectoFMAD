@@ -42,7 +42,10 @@ Hay 2 columnas al final: "Z_CostContact" y "Z_Revenue" que no sé qué son.
 En esta sección haría los siguientes cambios para dejar un datasets más simple.
 Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el lugar por donde se han hecho las ofertas a cada cliente y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
 ```{r}
-
+datos %>%
+  replace(is.na(.), 0) %>%
+  rowwise(ID) %>%
+  mutate(suma_ofertas = sum(c(NumWebPurchases, NumStorePurchases)))
 ```
 
 
