@@ -31,20 +31,30 @@ plot(pressure)
 
 # TODO Resumen de datos
 ```{r}
+cat(cat(cat(cat("El conjunto de datos tiene", nrow(datos)), "filas y"), ncol(datos)), "columnas")
 head(datos)
-cat(cat(cat(cat(print("El conjunto de datos tiene"), nrow(datos)), "filas y"), ncol(datos)), "columnas")
 ```
 Hay 2 columnas al final: "Z_CostContact" y "Z_Revenue" que no sé qué son.
 
 
 
 # TODO Preprocesamiento de los datos
-En esta sección haría los siguientes cambios. Para dejar los datos limpios cambiaría 2 grupos de columnas.
-El primer grupo de columnas serían "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el lugar por donde se han hecho las ofertas a cada cliente.
-El segundo grupo son: "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5" que indican si el cliente aceptó la oferta i-ésima.
-Habría que hacer algo con la columna "Response" que indica si el cliente aceptó la última oferta.
+En esta sección haría los siguientes cambios para dejar un datasets más simple.
+Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el lugar por donde se han hecho las ofertas a cada cliente y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
+```{r}
+
+```
+
+
+Por otro lado trataría las columnas: "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5". que indican si el cliente aceptó la oferta i-ésima.
+La columna "Response" indica si el cliente aceptó la última oferta.
+Cogería todas esas columnas y las sumaría y dejaría una única que indique el número de ofertas que ha aceptado el cliente de las últimas 6.
 Con todas estas columnas habría que pivotar y dejar una única columa que sea en el primer grupo: lugar, y en el segundo una columna que sea la oferta que se aceptó.
 Si no se pone la oferta i indica que no se aceptó.
+
+
+
+
 
 
 Aquí tengo mis dudas. Con las siguiente columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" que marcan la cantidad de dinero que se ha gastado cada cliente en un tipo de producto.
