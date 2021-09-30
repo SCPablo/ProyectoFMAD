@@ -34,7 +34,55 @@ library(tidyverse)
 Leemos los datos
 ```{r}
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
+head(datos)
 ```
+
+\newpage
+
+# Definición de las variables
+
+- **ID**: El ID del cliente.
+
+- **Year_Birth:** Año de nacimiento.
+
+- **Education:** Nivel de educación del cliente.
+
+- **Marital_Status:** Estado civil del cliente.
+
+- **Income:** Ingreso familiar anual del cliente.
+
+- **Kidhome:** Número de niños pequeños en casa del cliente.
+
+- **Teenhome:** Número de adolescentes en el hogar del cliente.
+
+- **Dt_Customer:** Fecha de inscripción del cliente en la empresa.
+
+- **Recency:** Número de días desde la última compra.
+
+- **MntWines:** Gasto en productos vitivinícolas en los últimos 2 años.
+
+- **MntGoldProds:** Gasto en productos **"premium"??** en los últimos 2 años.
+
+- **NumDealsPurchases:** Número de compras con uso de descuento.
+
+- **NumWebPurchases:** Número de compras a través de la web.
+
+- **NumCatalogPurchases:** Número de compras usando catalogo.
+
+- **NumWebVisitsMonth:** **¿¿¿¿Dicen que es lo mismo que las compras a traves de la web??? Pero no seria visitas por mesa la web** 
+
+- **AcceptedCmp1:** 1 si el cliente acepta la oferta en la 1ra campaña, 0 si no lo acepta.
+
+- **AcceptedCmp2:** 1 si el cliente acepta la oferta en la 2nd campaña, 0 si no lo acepta.
+
+- **Complain:** 1 si el cliente se ha quejado en los dos últimos años.
+
+- **Z_CostContact:** Coste de contactar con cliente.
+
+- **Z_Revenue:** Ingresos/Beneficios después de que el cliente acepte la campaña
+
+- **Response:** 1 si el cliente acepta la oferta en la última campaña y 0 si no la acepta.
+
 
 \newpage
 
