@@ -30,7 +30,7 @@ Leemos los datos
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
 ```
 
-
+\newpage
 
 ## Including Plots
 
@@ -40,6 +40,8 @@ You can also embed plots, for example:
 plot(pressure)
 ```
 
+\newpage
+
 # TODO Resumen de datos
 ```{r}
 cat(cat(cat(cat("El conjunto de datos tiene", nrow(datos)), "filas y"), ncol(datos)), "columnas")
@@ -47,6 +49,7 @@ head(datos)
 ```
 Hay 2 columnas al final: "Z_CostContact" y "Z_Revenue" que no sé qué son.
 
+\newpage
 
 
 # TODO Preprocesamiento de los datos
@@ -70,6 +73,7 @@ Si no se pone la oferta i indica que no se aceptó.
 
 Aquí tengo mis dudas. Con las siguiente columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" que marcan la cantidad de dinero que se ha gastado cada cliente en un tipo de producto.
 
+\newpage
 
 # TODO Visualización de los datos
 # TODO Buscar la relación posible entre distintas variable
