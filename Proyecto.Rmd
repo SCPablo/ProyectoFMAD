@@ -1,13 +1,19 @@
 ---
-title: "Proyecto"
+title: "Proyecto FMAD"
 subtitle: ICAI. Máster en Big Data. Fundamentos Matemáticos del Análisis de Datos
   (FMAD).
 date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
 linestretch: "1.25"
+header-includes:
+  \usepackage[spanish]{babel}
 output:
   pdf_document: default
   html_document: default
 ---
+
+\begin{center}
+\includegraphics{logoicai.png}
+\end{center}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
