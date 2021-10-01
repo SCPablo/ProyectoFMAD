@@ -84,15 +84,6 @@ head(datos)
 - **Response:** 1 si el cliente acepta la oferta en la última campaña y 0 si no la acepta.
 
 
-\newpage
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
 \newpage
 
@@ -107,8 +98,17 @@ Hay 2 columnas al final: "Z_CostContact" y "Z_Revenue" que no sé qué son.
 
 
 # TODO Preprocesamiento de los datos
+
+**Antes de todo yo diria que habría que eliminar todos los valores nulos ya que hay bastantes y revisar que los datos estan dentro de su variable ya que en varios casos que he visto hay datos de fechas que estan dentro de una variable de tipo int**
+
+En el dataset original en vez de aparecer las edades aparecen los años de nacimiento de los clientes. Para un procesamiento mejor y más útil realizaremos un mutate a la tabla con el fin de generar una nueva columna formada por la edad de los clientes.
+
+
+
+
+
 En esta sección haría los siguientes cambios para dejar un datasets más simple.
-Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el lugar por donde se han hecho las ofertas a cada cliente y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
+Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que **indican el lugar por donde se han hecho las ofertas a cada cliente** ||||| **Esas variables no son el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web** |||| y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
 ```{r}
 datos %>%
   replace(is.na(.), 0) %>%
@@ -130,15 +130,27 @@ Si no se pone la oferta i indica que no se aceptó.
 
 Aquí tengo mis dudas. Con las siguiente columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" que marcan la cantidad de dinero que se ha gastado cada cliente en un tipo de producto.
 
+
+
 \newpage
 
 # TODO Visualización de los datos
+
+
+
+
 # TODO Buscar la relación posible entre distintas variable
+
+
 # TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
+
+Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
+
+
+
 # TODO Convertir a booleana la variable target
 
-Preprocesamiento de los datos
-```{r}
 
-```
+
+
 
