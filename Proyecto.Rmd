@@ -1,13 +1,19 @@
 ---
-title: "Proyecto"
+title: "Proyecto FMAD"
 subtitle: ICAI. Máster en Big Data. Fundamentos Matemáticos del Análisis de Datos
   (FMAD).
 date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
 linestretch: "1.25"
+header-includes:
+  \usepackage[spanish]{babel}
 output:
   pdf_document: default
   html_document: default
 ---
+
+\begin{center}
+\includegraphics{logoicai.png}
+\end{center}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -28,17 +34,56 @@ library(tidyverse)
 Leemos los datos
 ```{r}
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
+head(datos)
 ```
 
 \newpage
 
-## Including Plots
+# Definición de las variables
 
-You can also embed plots, for example:
+- **ID**: El ID del cliente.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+- **Year_Birth:** Año de nacimiento.
+
+- **Education:** Nivel de educación del cliente.
+
+- **Marital_Status:** Estado civil del cliente.
+
+- **Income:** Ingreso familiar anual del cliente.
+
+- **Kidhome:** Número de niños pequeños en casa del cliente.
+
+- **Teenhome:** Número de adolescentes en el hogar del cliente.
+
+- **Dt_Customer:** Fecha de inscripción del cliente en la empresa.
+
+- **Recency:** Número de días desde la última compra.
+
+- **MntWines:** Gasto en productos vitivinícolas en los últimos 2 años.
+
+- **MntGoldProds:** Gasto en productos **"premium"??** en los últimos 2 años.
+
+- **NumDealsPurchases:** Número de compras con uso de descuento.
+
+- **NumWebPurchases:** Número de compras a través de la web.
+
+- **NumCatalogPurchases:** Número de compras usando catalogo.
+
+- **NumWebVisitsMonth:** **¿¿¿¿Dicen que es lo mismo que las compras a traves de la web??? Pero no seria visitas por mesa la web** 
+
+- **AcceptedCmp1:** 1 si el cliente acepta la oferta en la 1ra campaña, 0 si no lo acepta.
+
+- **AcceptedCmp2:** 1 si el cliente acepta la oferta en la 2nd campaña, 0 si no lo acepta.
+
+- **Complain:** 1 si el cliente se ha quejado en los dos últimos años.
+
+- **Z_CostContact:** Coste de contactar con cliente.
+
+- **Z_Revenue:** Ingresos/Beneficios después de que el cliente acepte la campaña
+
+- **Response:** 1 si el cliente acepta la oferta en la última campaña y 0 si no la acepta.
+
+
 
 \newpage
 
@@ -47,19 +92,42 @@ plot(pressure)
 cat(cat(cat(cat("El conjunto de datos tiene", nrow(datos)), "filas y"), ncol(datos)), "columnas")
 head(datos)
 ```
-Hay 2 columnas al final: "Z_CostContact" y "Z_Revenue" que no sé qué son.
+
 
 \newpage
 
 
 # TODO Preprocesamiento de los datos
+
+**Antes de todo yo diria que habría que eliminar todos los valores nulos ya que hay bastantes y revisar que los datos estan dentro de su variable ya que en varios casos que he visto hay datos de fechas que estan dentro de una variable de tipo int**
+
+Como había muchos datos hemos obtado por una solución simple para corregir los valores erróneos: eliminar las filas.
+Además, sustituimos los valores nulos por 0's. Y cambiamos algún tipo de columna que esté mal
+```{r}
+datos <- datos %>%
+  filter(ID != 0 & ID != 1 & Education != "2n" & Income > 10 & Income != "2")
+datos <- datos %>%
+  replace(is.na(.), 0)
+datos$Teenhome <- as.numeric(datos$Teenhome)
+```
+
+
+En el dataset original en vez de aparecer las edades aparecen los años de nacimiento de los clientes. Para un procesamiento mejor y más útil realizaremos un mutate a la tabla con el fin de generar una nueva columna formada por la edad de los clientes.
+```{r}
+datos <- datos %>%
+  mutate(edad = 2021 - Year_Birth) %>%
+  select(-Year_Birth)
+```
+
+
+
+
 En esta sección haría los siguientes cambios para dejar un datasets más simple.
-Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el lugar por donde se han hecho las ofertas a cada cliente y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
+Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que **indican el lugar por donde se han hecho las ofertas a cada cliente** ||||| **Esas variables no son el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web** |||| y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
 ```{r}
 datos %>%
-  replace(is.na(.), 0) %>%
   rowwise(ID) %>%
-  mutate(suma_ofertas = sum(c(NumWebPurchases, NumStorePurchases)))
+  mutate(suma_ofertas = sum(c(NumWebPurchases, NumStorePurchases, Response)))
 ```
 
 
@@ -69,22 +137,54 @@ Cogería todas esas columnas y las sumaría y dejaría una única que indique el
 Con todas estas columnas habría que pivotar y dejar una única columa que sea en el primer grupo: lugar, y en el segundo una columna que sea la oferta que se aceptó.
 Si no se pone la oferta i indica que no se aceptó.
 
+```{r}
+datos %>%
+  rowwise(ID) %>%
+  mutate(respuestas = sum(c(AcceptedCmp3:AcceptedCmp2, Response))) %>%
+  filter(respuestas == 2)
+```
 
 
 
 
+Sumamos las columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" para saber cuánto dinero se ha gastado un cliente en total.
+```{r}
+datos %>%
+  rowwise(ID) %>%
+  mutate(Dinero_Gastado = sum(c(MntWines, MntFruits, MntMeatProducts, MntFishProducts, MntSweetProducts)))
+```
+Agrupamos el estado civil de cada cliente y lo simplificamos para ver si vive solo o en pareja
+```{r}
 
-Aquí tengo mis dudas. Con las siguiente columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" que marcan la cantidad de dinero que se ha gastado cada cliente en un tipo de producto.
+
+
+```
+
+Contamos cuantos niños tiene el cliente en general
+```{r}
+datos %>%
+  mutate(Niños = Kidhome + Teenhome)
+```
 
 \newpage
 
 # TODO Visualización de los datos
+
+
+
+
 # TODO Buscar la relación posible entre distintas variable
+
+
 # TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
+
+Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
+
+
+
 # TODO Convertir a booleana la variable target
 
-Preprocesamiento de los datos
-```{r}
 
-```
+
+
 
