@@ -29,6 +29,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Cargamos las librerías
 ```{r, echo = FALSE, warning=FALSE,message=FALSE}
 library(tidyverse)
+library(lubridate)
 ```
 
 Leemos los datos
@@ -119,29 +120,32 @@ datos <- datos %>%
   select(-Year_Birth)
 ```
 
+Sumaremos el total de niños de cada cliente agrupando las columnas Kidhome y Teenhome
+```{r}
+datos <- datos %>%
+  mutate(totalHijos = Kidhome + Teenhome) %>%
+  select(-Kidhome, -Teenhome)
+```
+
+
 
 
 
 En esta sección haría los siguientes cambios para dejar un datasets más simple.
 Por un lado cogería las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que **indican el lugar por donde se han hecho las ofertas a cada cliente** ||||| **Esas variables no son el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web** |||| y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
 ```{r}
-datos %>%
+datos <- datos %>%
   rowwise(ID) %>%
-  mutate(suma_ofertas = sum(c(NumWebPurchases, NumStorePurchases, Response)))
+  mutate(suma_ofertas = sum(c(NumWebPurchases, NumCatalogPurchases, NumStorePurchases))) %>%
+  select(-NumWebPurchases, -NumCatalogPurchases, -NumStorePurchases)
 ```
 
 
-Por otro lado trataría las columnas: "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5". que indican si el cliente aceptó la oferta i-ésima.
-La columna "Response" indica si el cliente aceptó la última oferta.
-Cogería todas esas columnas y las sumaría y dejaría una única que indique el número de ofertas que ha aceptado el cliente de las últimas 6.
-Con todas estas columnas habría que pivotar y dejar una única columa que sea en el primer grupo: lugar, y en el segundo una columna que sea la oferta que se aceptó.
-Si no se pone la oferta i indica que no se aceptó.
+Vamos a eliminar las columnas: "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5" y nos vamos a quedar únicamente con la columna "Response" indica si el cliente aceptó la última oferta.
 
 ```{r}
-datos %>%
-  rowwise(ID) %>%
-  mutate(respuestas = sum(c(AcceptedCmp3:AcceptedCmp2, Response))) %>%
-  filter(respuestas == 2)
+datos <- datos %>%
+  select(-c(AcceptedCmp3:AcceptedCmp2))
 ```
 
 
@@ -155,18 +159,26 @@ datos %>%
 ```
 Agrupamos el estado civil de cada cliente y lo simplificamos para ver si vive solo o en pareja
 ```{r}
-datos %>%
+datos <- datos %>%
   mutate(Marital_Status = factor(Marital_Status== "Single" | Marital_Status== "Divorced", levels = c(TRUE, FALSE), labels = c('Single','Not single')))
 
-
-
 ```
 
-Contamos cuantos niños tiene el cliente en general
+
+Cambiamos la columna Dt_Customer y establecemos 4 grupos que representan la longevidad del cliente en la empresa
 ```{r}
-datos %>%
-  mutate(Niños = Kidhome + Teenhome)
+datos$Dt_Customer = as.Date(datos$Dt_Customer, "%d-%m-%Y")
+fechaMinima = min(datos$Dt_Customer)
+datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinima), n = 3), labels = c("Nuevo", "Con Experiencia", "Muy Antiguo"), ordered = TRUE)
+
 ```
+
+
+
+
+
+
+
 
 \newpage
 
