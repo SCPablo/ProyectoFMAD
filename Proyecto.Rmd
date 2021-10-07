@@ -72,7 +72,7 @@ datos<-na.omit(datos)
 
 - **NumCatalogPurchases:** Número de compras usando catalogo.
 
-- **NumWebVisitsMonth:** **¿¿¿¿Dicen que es lo mismo que las compras a traves de la web??? Pero no seria visitas por mesa la web** 
+- **NumWebVisitsMonth:** Visitas por mes a la web.
 
 - **AcceptedCmp1:** 1 si el cliente acepta la oferta en la 1ra campaña, 0 si no lo acepta.
 
@@ -93,7 +93,6 @@ datos<-na.omit(datos)
 # TODO Resumen de datos
 ```{r}
 cat(cat(cat(cat("El conjunto de datos tiene", nrow(datos)), "filas y"), ncol(datos)), "columnas")
-head(datos)
 ```
 
 
@@ -117,7 +116,7 @@ En el dataset original en vez de aparecer las edades aparecen los años de nacim
 ```{r}
 datos <- datos %>%
   mutate(edad = 2021 - Year_Birth) %>%
-  select(-Year_Birth)
+  select(-Year_Birth) 
 ```
 
 Sumaremos el total de niños de cada cliente agrupando las columnas Kidhome y Teenhome
@@ -161,16 +160,15 @@ Agrupamos el estado civil de cada cliente y lo simplificamos para ver si vive so
 ```{r}
 datos <- datos %>%
   mutate(Marital_Status = factor(Marital_Status== "Single" | Marital_Status== "Divorced", levels = c(TRUE, FALSE), labels = c('Single','Not single')))
-
 ```
 
 
 Cambiamos la columna Dt_Customer y establecemos 4 grupos que representan la longevidad del cliente en la empresa
 ```{r}
+
 datos$Dt_Customer = as.Date(datos$Dt_Customer, "%d-%m-%Y")
 fechaMinima = min(datos$Dt_Customer)
 datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinima), n = 3), labels = c("Nuevo", "Con Experiencia", "Muy Antiguo"), ordered = TRUE)
-
 ```
 
 
@@ -184,8 +182,7 @@ datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinim
 
 # TODO Visualización de los datos
 En este apartado se realizará el análisis mediante gráficas de las variables según su tipo, viendo si siguen una distribución normal y si presentarían outliers entre otros factores.
-```{r}
-str(datos)
+```{r, warning=FALSE, message=FALSE}
 datos$Income <- as.numeric(datos$Income)
 datos$Recency <- as.numeric(datos$Recency)
 h1 <- ggplot(datos)+
@@ -229,16 +226,41 @@ gridExtra::grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14,h15)
 # TODO Buscar la relación posible entre distintas variable
 
 \newpage
-En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output serña la variable 'complain' la convertiremos en una variable binaria
+En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output será la variable 'complain' la convertiremos en una variable binaria
 ```{r}
 datos_ML<-datos %>%
   mutate(Complain = factor(Complain>0, levels = c(TRUE, FALSE), labels = c(1,0)))
+```
+
+Veamos como se relacionan las diferentes variables con la variable 'complain'.
+
+
+```{r}
+ggplot(datos_ML) + 
+  geom_boxplot(aes(x = Complain, y = Income))
+```
+
+```{r}
+ggplot(datos_ML) + 
+  geom_boxplot(aes(x = Complain, y = edad))
+```
+
+```{r}
+ggplot(datos_ML) + 
+  geom_boxplot(aes(x = Complain, y = Niños))
+```
+
+```{r}
+ggplot(datos_ML) + 
+  geom_boxplot(aes(x = Complain, y = ))
 ```
 
 # TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
 
 
 Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
+
+
 
 
 
