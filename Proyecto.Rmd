@@ -35,6 +35,8 @@ Leemos los datos
 ```{r}
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
 head(datos)
+sum(is.na(datos))
+datos<-na.omit(datos)
 ```
 
 \newpage
@@ -106,8 +108,6 @@ Además, sustituimos los valores nulos por 0's. Y cambiamos algún tipo de colum
 ```{r}
 datos <- datos %>%
   filter(ID != 0 & ID != 1 & Education != "2n" & Income > 10 & Income != "2")
-datos <- datos %>%
-  replace(is.na(.), 0)
 datos$Teenhome <- as.numeric(datos$Teenhome)
 ```
 
@@ -155,6 +155,8 @@ datos %>%
 ```
 Agrupamos el estado civil de cada cliente y lo simplificamos para ver si vive solo o en pareja
 ```{r}
+datos %>%
+  mutate(Marital_Status = factor(Marital_Status== "Single" | Marital_Status== "Divorced", levels = c(TRUE, FALSE), labels = c('Single','Not single')))
 
 
 
@@ -169,14 +171,60 @@ datos %>%
 \newpage
 
 # TODO Visualización de los datos
+En este apartado se realizará el análisis mediante gráficas de las variables según su tipo, viendo si siguen una distribución normal y si presentarían outliers entre otros factores.
+```{r}
+str(datos)
+datos$Income <- as.numeric(datos$Income)
+datos$Recency <- as.numeric(datos$Recency)
+h1 <- ggplot(datos)+
+  geom_histogram(aes(x = Income), color = "black", alpha = 0.35)
+h2 <- ggplot(datos)+
+  geom_histogram(aes(x = Recency ), color = "black", alpha = 0.35)
+h3 <- ggplot(datos)+
+  geom_histogram(aes(x = MntWines ), color = "black", alpha = 0.35)
+h4 <- ggplot(datos)+
+  geom_histogram(aes(x = MntFruits ), color = "black", alpha = 0.35)
+h5 <- ggplot(datos)+
+  geom_histogram(aes(x = MntMeatProducts ), color = "black", alpha = 0.35)
+h6 <- ggplot(datos)+
+  geom_histogram(aes(x = MntFishProducts ), color = "black", alpha = 0.35)
+h7 <- ggplot(datos)+
+  geom_histogram(aes(x = MntSweetProducts ), color = "black", alpha = 0.35)
+h8 <- ggplot(datos)+
+  geom_histogram(aes(x = MntGoldProds ), color = "black", alpha = 0.35)
+h9 <- ggplot(datos)+
+  geom_histogram(aes(x = NumDealsPurchases ), color = "black", alpha = 0.35)
+h10 <- ggplot(datos)+
+  geom_histogram(aes(x = NumWebPurchases ), color = "black", alpha = 0.35)
+h11 <- ggplot(datos)+
+  geom_histogram(aes(x = NumCatalogPurchases ), color = "black", alpha = 0.35)
+h12 <- ggplot(datos)+
+  geom_histogram(aes(x = NumStorePurchases ), color = "black", alpha = 0.35)
+h13 <- ggplot(datos)+
+  geom_histogram(aes(x = NumWebVisitsMonth ), color = "black", alpha = 0.35)
+h14 <- ggplot(datos)+
+  geom_histogram(aes(x = Complain ), color = "black", alpha = 0.35)
+h15 <- ggplot(datos)+
+  geom_histogram(aes(x = edad ), color = "black", alpha = 0.35)
+gridExtra::grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14,h15)
+
+```
+
 
 
 
 
 # TODO Buscar la relación posible entre distintas variable
 
+\newpage
+En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output serña la variable 'complain' la convertiremos en una variable binaria
+```{r}
+datos_ML<-datos %>%
+  mutate(Complain = factor(Complain>0, levels = c(TRUE, FALSE), labels = c(1,0)))
+```
 
 # TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
+
 
 Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
 
