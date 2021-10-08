@@ -202,20 +202,14 @@ h7 <- ggplot(datos)+
 h8 <- ggplot(datos)+
   geom_histogram(aes(x = MntGoldProds ), color = "black", alpha = 0.35)
 h9 <- ggplot(datos)+
-  geom_histogram(aes(x = NumDealsPurchases ), color = "black", alpha = 0.35)
+  geom_histogram(aes(x = suma_ofertas ), color = "black", alpha = 0.35)
 h10 <- ggplot(datos)+
-  geom_histogram(aes(x = NumWebPurchases ), color = "black", alpha = 0.35)
-h11 <- ggplot(datos)+
-  geom_histogram(aes(x = NumCatalogPurchases ), color = "black", alpha = 0.35)
-h12 <- ggplot(datos)+
-  geom_histogram(aes(x = NumStorePurchases ), color = "black", alpha = 0.35)
-h13 <- ggplot(datos)+
   geom_histogram(aes(x = NumWebVisitsMonth ), color = "black", alpha = 0.35)
-h14 <- ggplot(datos)+
+h11 <- ggplot(datos)+
   geom_histogram(aes(x = Complain ), color = "black", alpha = 0.35)
-h15 <- ggplot(datos)+
+h12 <- ggplot(datos)+
   geom_histogram(aes(x = edad ), color = "black", alpha = 0.35)
-gridExtra::grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14,h15)
+gridExtra::grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12)
 
 ```
 
@@ -226,10 +220,12 @@ gridExtra::grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14,h15)
 # TODO Buscar la relación posible entre distintas variable
 
 \newpage
-En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output será la variable 'complain' la convertiremos en una variable binaria
+En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output será la variable 'num_hijos ' y 'marital_status' que las convertiremos en una variables binarias.
 ```{r}
 datos_ML<-datos %>%
-  mutate(Complain = factor(Complain>0, levels = c(TRUE, FALSE), labels = c(1,0)))
+  mutate(sonPadres = factor(totalHijos>0, levels = c(TRUE, FALSE), labels = c(1,0)))
+datos_ML<-datos_ML %>%
+  mutate(Marital_Status = factor(Marital_Status== 'Single', levels = c(TRUE, FALSE), labels = c(1,0)))
 ```
 
 Veamos como se relacionan las diferentes variables con la variable 'complain'.
@@ -237,34 +233,28 @@ Veamos como se relacionan las diferentes variables con la variable 'complain'.
 
 ```{r}
 ggplot(datos_ML) + 
-  geom_boxplot(aes(x = Complain, y = Income))
+  geom_boxplot(aes(x = sonPadres, y = MntSweetProducts))
 ```
 
 ```{r}
 ggplot(datos_ML) + 
-  geom_boxplot(aes(x = Complain, y = edad))
+  geom_boxplot(aes(x = sonPadres, y = MntWines))
 ```
 
 ```{r}
 ggplot(datos_ML) + 
-  geom_boxplot(aes(x = Complain, y = Niños))
+  geom_boxplot(aes(x = sonPadres, y = NumWebVisitsMonth))
 ```
 
 ```{r}
 ggplot(datos_ML) + 
-  geom_boxplot(aes(x = Complain, y = ))
+  geom_boxplot(aes(x = sonPadres, y = suma_ofertas))
 ```
 
-# TODO Realizar algún modelo predictivo sobre variables target como el 'complain' 
+# TODO Realizar algún modelo predictivo sobre variables target  
 
 
 Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
-
-
-
-
-
-# TODO Convertir a booleana la variable target
 
 
 
