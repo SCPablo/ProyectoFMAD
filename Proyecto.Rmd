@@ -30,6 +30,7 @@ Cargamos las librerías
 ```{r, echo = FALSE, warning=FALSE,message=FALSE}
 library(tidyverse)
 library(lubridate)
+library(caret)
 ```
 
 Leemos los datos
@@ -217,41 +218,67 @@ gridExtra::grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12)
 
 
 
-# TODO Buscar la relación posible entre distintas variable
+# TODO Buscar la relación posible entre distintas variable y realizr modelos de ML
 
 \newpage
-En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output será la variable 'num_hijos ' y 'marital_status' que las convertiremos en una variables binarias.
+En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. En primera instancia, el output será la variable 'num_hijos 'que la convertiremos en una variable binaria.
 ```{r}
 datos_ML<-datos %>%
   mutate(sonPadres = factor(totalHijos>0, levels = c(TRUE, FALSE), labels = c(1,0)))
-datos_ML<-datos_ML %>%
-  mutate(Marital_Status = factor(Marital_Status== 'Single', levels = c(TRUE, FALSE), labels = c(1,0)))
+borrar <- c("MntWines","MntSweetProducts","NumWebVisitsMonth","suma_ofertas", "sonPadres")
+datos_ML <- datos_ML[(names(datos_ML) %in% borrar)]
+head(datos_ML) 
+
 ```
 
-Veamos como se relacionan las diferentes variables con la variable 'complain'.
-
-
-```{r}
-ggplot(datos_ML) + 
-  geom_boxplot(aes(x = sonPadres, y = MntSweetProducts))
-```
+Veamos como se relacionan las diferentes variables con las variables de output, empezando por si tienen hijos.
 
 ```{r}
-ggplot(datos_ML) + 
+
+g1 <-ggplot(datos_ML) + 
   geom_boxplot(aes(x = sonPadres, y = MntWines))
-```
-
-```{r}
-ggplot(datos_ML) + 
+g2<-ggplot(datos_ML) + 
+  geom_boxplot(aes(x = sonPadres, y = MntSweetProducts))
+g3<-ggplot(datos_ML) + 
   geom_boxplot(aes(x = sonPadres, y = NumWebVisitsMonth))
-```
-
-```{r}
-ggplot(datos_ML) + 
+g4<-ggplot(datos_ML) + 
   geom_boxplot(aes(x = sonPadres, y = suma_ofertas))
+gridExtra::grid.arrange(g1,g2,g3,g4)
+
 ```
 
-# TODO Realizar algún modelo predictivo sobre variables target  
+***Split del dataset***
+```{r}
+
+set.seed(150) 
+trainIndex <- createDataPartition(datos_ML$sonPadres, p = 0.8, list = FALSE, times = 1) 
+train_set <- datos_ML[trainIndex,]
+test_set <- datos_ML[-trainIndex,]
+train_set_eval <- train_set
+test_set_eval <- test_set
+```
+
+***Ahora realizamos el control y realizamos el modelo de regresión logística***
+```{r}
+#Control del train 
+ctrl <- trainControl(method = "cv", number = 10,summaryFunction = defaultSummary, classProbs = TRUE) 
+
+#Regresión logística
+train_set <- train_set %>%
+  mutate(sonPadres = factor(sonPadres == 1, levels = c(TRUE, FALSE), labels = c("Si", "No")))
+LogReg.fit <- train(form = sonPadres ~ ., 
+                    data = train_set,              
+                    method = "glm",                   
+                    preProcess = c("center","scale"), 
+                    trControl = ctrl,                 
+                    metric = "Accuracy") 
+LogReg.fit
+summary(LogReg.fit) 
+str(LogReg.fit) 
+boxplot(LogReg.fit$resample$Accuracy, xlab = "Accuracy")
+```
+
+
 
 
 Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
