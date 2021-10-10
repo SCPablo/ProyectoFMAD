@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Introducción
 
 Cargamos las librerías
-```{r, echo = FALSE, warning=FALSE,message=FALSE}
+```{r, warning=FALSE,message=FALSE}
 library(tidyverse)
 library(lubridate)
 library(caret)
@@ -64,7 +64,7 @@ datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
 
 - **MntWines:** Gasto en productos vitivinícolas en los últimos 2 años.
 
-- **MntGoldProds:** Gasto en productos **"premium"??** en los últimos 2 años.
+- **MntGoldProds:** Gasto en productos premium en los últimos 2 años.
 
 - **NumDealsPurchases:** Número de compras con uso de descuento.
 
@@ -127,7 +127,8 @@ Ya que el conjunto de datos tiene muchas columnas, vamos a eliminar algunas que 
 
 ```{r}
 datos <- datos %>%
-  select(-c(AcceptedCmp3:AcceptedCmp2), -NumDealsPurchases, -Recency, -Z_CostContact, -Z_Revenue)
+  select(-c(AcceptedCmp3:AcceptedCmp2), -NumDealsPurchases, -Recency, 
+         -Z_CostContact, -Z_Revenue)
 ```
 
 
@@ -146,12 +147,12 @@ datos <- datos %>%
 ```
 
 
-Cogemos las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que **indican el lugar por donde se han hecho las ofertas a cada cliente** ||||| **Esas variables no son el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web** |||| y las sumaría todas en una única columna que indique el número de ofertas totales que ha recibido el cliente.
+Cogemos las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web y las sumaría todas en una única columna que indique el total de compras que ha realizado el cliente.
 ```{r}
 datos <- datos %>%
   rowwise(ID) %>%
-  mutate(suma_ofertas = sum(c(NumWebPurchases, NumCatalogPurchases, NumStorePurchases))) %>%
-  select(-NumWebPurchases, -NumCatalogPurchases, -NumStorePurchases)
+  mutate(suma_compras = sum(c(NumWebPurchases, NumCatalogPurchases, 
+                              NumStorePurchases))) 
 ```
 
 
@@ -160,12 +161,14 @@ Sumamos las columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProdu
 ```{r}
 datos <- datos %>%
   rowwise(ID) %>%
-  mutate(Dinero_Gastado = sum(c(MntWines, MntFruits, MntMeatProducts, MntFishProducts, MntSweetProducts, MntGoldProds)))
+  mutate(Dinero_Gastado = sum(c(MntWines, MntFruits, MntMeatProducts, MntFishProducts, 
+                                MntSweetProducts, MntGoldProds)))
 ```
 Agrupamos el estado civil de cada cliente y lo simplificamos para ver si vive solo o en pareja
 ```{r}
 datos <- datos %>%
-  mutate(Marital_Status = factor(Marital_Status== "Single" | Marital_Status== "Divorced", levels = c(TRUE, FALSE), labels = c('Single','Not single')))
+  mutate(Marital_Status = factor(Marital_Status== "Single" | Marital_Status== "Divorced", 
+                                 levels = c(TRUE, FALSE), labels = c('Single','Not single')))
 ```
 
 
@@ -173,7 +176,9 @@ Cambiamos la columna Dt_Customer y establecemos 4 grupos que representan la long
 ```{r}
 datos$Dt_Customer = as.Date(datos$Dt_Customer, "%d-%m-%Y")
 fechaMinima = min(datos$Dt_Customer)
-datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinima), n = 3), labels = c("Nuevo", "Con Experiencia", "Muy Antiguo"), ordered = TRUE)
+datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinima), 
+                      n = 3), labels = c("Nuevo", "Con Experiencia", "Muy Antiguo"), 
+                      ordered = TRUE)
 ```
 
 
@@ -203,7 +208,7 @@ h7 <- ggplot(datos) +
 h8 <- ggplot(datos) +
   geom_histogram(aes(x = Dinero_Gastado), color = "black", alpha = 0.35)
 h9 <- ggplot(datos)+
-  geom_histogram(aes(x = suma_ofertas ), color = "black", alpha = 0.35)
+  geom_histogram(aes(x = suma_compras ), color = "black", alpha = 0.35)
 h10 <- ggplot(datos)+
   geom_histogram(aes(x = NumWebVisitsMonth ), color = "black", alpha = 0.35)
 h11 <- ggplot(datos)+
@@ -282,7 +287,7 @@ gridExtra::grid.arrange(gb1,gb2,gb3,gb4, gb5, gb6, gb7)
 Vemos la relación entre la edad y los gastos de compras. Primero vamos a ver la distribución de la edad. Haría un violin así guapo pero lo he intentado y no sé
 ```{r}
 ggplot(datos) +
-  geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen") +
+  geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen", color = "black") +
   geom_density(aes(x = edad), color="red", size=1.5)
 ggplot(datos) + 
   geom_boxplot(aes(y = edad), fill = "darkblue", color = "orange")
@@ -329,7 +334,7 @@ Podemos ver que las los clientes en pareja son el doble prácticamente que los c
 
 Veamos la relación entre el salario y el nivel de estudios
 ```{r}
-ggplot(aux) +
+ggplot(datos) +
   geom_boxplot(aes(x = factor(Education), y = Income))
 ```
 Vemos que hay un outlier que no nos permite ver correctamente los gráficos. Por este motivo lo quitamos
@@ -337,7 +342,7 @@ Vemos que hay un outlier que no nos permite ver correctamente los gráficos. Por
 ```{r}
 aux <- datos %>%
   filter(Income < 500000)
-ggplot(aux) +
+ggplot(datos) +
   geom_boxplot(aes(x = factor(Education), y = Income))
 ```
 Se puede observar cláramente que las personas con un nivel de estudio "Basic" ganan mucho menos que cualquiera de los otros 3 grupos. Otra cosa que hay que tener en cuenta es que entre los 3 grupos restantes no existen deiferencias significativas.
