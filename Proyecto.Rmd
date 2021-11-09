@@ -94,7 +94,10 @@ datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
 ```{r}
 cat(cat(cat(cat("El conjunto de datos tiene", nrow(datos)), "filas y"), ncol(datos)), "columnas")
 str(datos)
-head(datos)
+```
+Con esto vemos el tipo de las variables y como podemos comprobar, necesiataremos algunas modificaciones en algunas de ellas.
+
+```{r}
 cat(cat("Existen", sum(is.na(datos))), "valores nulos")
 ```
 
@@ -104,26 +107,16 @@ cat(cat("Existen", sum(is.na(datos))), "valores nulos")
 
 # TODO Preprocesamiento de los datos
 
-**Antes de todo yo diria que habría que eliminar todos los valores nulos ya que hay bastantes y revisar que los datos estan dentro de su variable ya que en varios casos que he visto hay datos de fechas que estan dentro de una variable de tipo int**
-
 En un primer momento hemos eliminado las filas de los datos nulos. Además, tras observar que había algunos datos erróneos y tener suficientes clientes hemos eliminado las filas de dichos datos.
-Y cambiamos algún tipo de columna que esté mal
+
 ```{r}
 datos <- na.omit(datos)
 datos <- datos %>%
   filter(ID != 0 & ID != 1 & Education != "2n" & Income > 10 & Income != "2")
 ```
 
-En una segunda fase del preprocesado hemos cambiado algunas columnas mal tipadas
-```{r}
-datos$Teenhome <- as.numeric(datos$Teenhome)
-datos$Income <- as.numeric(datos$Income)
-datos$Recency <- as.numeric(datos$Recency)
-```
 
-
-
-Ya que el conjunto de datos tiene muchas columnas, vamos a eliminar algunas que no nos resultan muy interesantes: "NumDealsPurchases", "Receny", "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5", "Z_CostContact" y "Z_Revenue".
+Además, ya que el conjunto de datos tiene muchas columnas, vamos a eliminar algunas que no nos resultan muy interesantes: "NumDealsPurchases", "Receny", "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5", "Z_CostContact" y "Z_Revenue".
 
 ```{r}
 datos <- datos %>%
@@ -132,7 +125,16 @@ datos <- datos %>%
 ```
 
 
-En el dataset original en vez de aparecer las edades aparecen los años de nacimiento de los clientes. Para un procesamiento mejor y más útil realizaremos un mutate a la tabla con el fin de generar una nueva columna formada por la edad de los clientes.
+En una segunda fase del preprocesado hemos cambiado algunas columnas mal tipadas.
+```{r}
+datos$Teenhome <- as.numeric(datos$Teenhome)
+datos$Income <- as.numeric(datos$Income)
+datos$Recency <- as.numeric(datos$Recency)
+```
+
+
+Y posteriormente hemos trabajado con algunas columnas para hacerlas más útiles y simplificar el dataset.
+En el conjunto de datos original en vez de aparecer las edades aparecen los años de nacimiento de los clientes. Para un procesamiento mejor y más útil realizaremos un mutate con el fin de generar una nueva columna formada por la edad de los clientes.
 ```{r}
 datos <- datos %>%
   mutate(edad = 2021 - Year_Birth) %>%
@@ -147,7 +149,7 @@ datos <- datos %>%
 ```
 
 
-Cogemos las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web y las sumaría todas en una única columna que indique el total de compras que ha realizado el cliente.
+Cogemos las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web y las sumaremos todas en una única columna que indique el total de compras que ha realizado el cliente.
 ```{r}
 datos <- datos %>%
   rowwise(ID) %>%
@@ -186,7 +188,7 @@ datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinim
 
 \newpage
 
-# TODO Visualización de los datos
+# Visualización de los datos
 En este apartado se realizará el análisis mediante gráficas de las variables según su tipo, viendo si siguen una distribución normal y si presentarían outliers entre otros factores.
 
 Estas son las variables continuas
@@ -217,6 +219,10 @@ h12 <- ggplot(datos)+
   geom_histogram(aes(x = edad ), color = "black", alpha = 0.35)
 grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12)
 ```
+
+Podemos observar en los histogramas que ninguna de las variables sigue una distribución normal. El patrón más común es un gran número de datos con valores pequeños y muchos menos datos a medida que el valor de la variable del eje *x* aumenta. Por este motivo, aunque no los mostremos, podemos deducir que existen outliers en casi todas las variables.
+
+
 Estas son las varibles discretas
 ```{r}
 hb1 <- ggplot(datos)+
@@ -229,15 +235,15 @@ hb3 <- ggplot(datos) +
 grid.arrange(hb1, hb2, hb3, ncol = 3)
 ```
 
+En estas variables podemos observar diferentes patrones. Si miramos la educación de los clientes nos damos cuenta que hay mucha diferencia entre el número de clientes que tienen una educación básica y el resto de tipos, sobre todo los clientes *graduados*. De la misma forma vemos que hay más del doble de clientes *not single* que *sigle*. Por otro lado tenemos que la longividad de los clientes es uniforme.
 
 
-
-# TODO Buscar la relación posible entre distintas variable y realizr modelos de ML
+# Buscar la relación posible entre distintas variable y realizr modelos de ML
 
 \newpage
 En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. 
 
-En un primer momento hemos analizado la relación entre tener hijos/el número de hijos y los gastos en compras de cada tipo.
+En un primer momento hemos analizado la relación entre tener hijos y los gastos en compras de cada tipo.
 ```{r}
 datos_ML<-datos %>%
   mutate(sonPadres = factor(totalHijos>0, levels = c(FALSE, TRUE), labels = c(0,1)))
@@ -266,6 +272,8 @@ g7<-ggplot(datos_ML) +
   geom_boxplot(aes(x = sonPadres, y = Dinero_Gastado))
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
+Vemos que si los clientes tienen hijos, el gasto en todos los productos se reduce. Pero ya que hemos llegado hasta aquí, queremos además observar la relación entre el número de hijos y dichos gastos. Veamos los siguientes gráficos.
+
 ```{r}
 gb1 <-ggplot(datos_ML) + 
   geom_boxplot(aes(x = factor(totalHijos), y = MntWines))
@@ -283,14 +291,16 @@ gb7<-ggplot(datos_ML) +
   geom_boxplot(aes(x = factor(totalHijos), y = Dinero_Gastado))
 gridExtra::grid.arrange(gb1,gb2,gb3,gb4, gb5, gb6, gb7)
 ```
+Siguiendo con la relación anterior, observamos que a más hijos menor es el gasto en todos los productos.
 
-Vemos la relación entre la edad y los gastos de compras. Primero vamos a ver la distribución de la edad. Haría un violin así guapo pero lo he intentado y no sé
+
+Vemos la relación entre la edad y los gastos de compras. Primero vamos a ver la distribución de la edad.
 ```{r}
 ggplot(datos) +
   geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen", color = "black") +
   geom_density(aes(x = edad), color="red", size=1.5)
 ggplot(datos) + 
-  geom_boxplot(aes(y = edad), fill = "darkblue", color = "orange")
+  geom_boxplot(aes(y = edad), fill = "darkblue", color = "black")
 ```
 Como hemos visto que parece que hay un dato mal introducido (ya que no creemos que haya un cliente con 120 años) lo eliminamos y volvemos a examinar los datos
 ```{r}
@@ -303,6 +313,7 @@ ggplot(datos) +
   geom_boxplot(aes(y = edad), fill = "darkblue", color = "orange")
 ```
 
+Ahora ya sí podemos analizar los datos.
 ```{r}
 g1 <-ggplot(datos) + 
   geom_jitter(aes(x = edad, y = MntWines))
@@ -321,15 +332,15 @@ g7<-ggplot(datos) +
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
 En una primera observación podemos ver que el gasto en vino es mucho mayor que en cualquiera de las otras secciones y para cualquier edad.
-Por otra parte, noo parece que existan patrones muy claros en ninguna de las variables. Sin embargo, podríamos decir que las personas de mayor edad gastan más dinero en vino y eso probablemente repercuten en que gasten más dinero en general.  pero se puede observar en el último gráfico que las personas de una edad más alta gastan más dinero
+Por otra parte, noo parece que existan patrones muy claros en ninguna de las variables. Sin embargo, podríamos decir que las personas de mayor edad gastan más dinero en vino y eso probablemente repercuten en que gasten más dinero en general. 
 
-Realizamos un último estudio en función del nivel de estudios y el estado sentimental. Pero primero vamos a ver cuantos datos hay de cada tio
+Realizamos un último estudio en función del nivel de estudios y el estado sentimental. Pero primero vamos a ver cuantos datos hay de cada tipo.
 ```{r}
 table(datos$Education, datos$Marital_Status)
 ggplot(datos) +
   geom_bar(aes(x = Education, fill = Marital_Status), position = "dodge")
 ```
-Podemos ver que las los clientes en pareja son el doble prácticamente que los clientes sin pareja para cada nivel de estudios.
+Anteriormente hemos visto de forma general que el número de clientes con pareja son el doble de los sin pareja, pero ahora vemos esta relación se cumple además, para todos los grupos de niveles de estudio
 
 
 Veamos la relación entre el salario y el nivel de estudios
@@ -342,7 +353,7 @@ Vemos que hay un outlier que no nos permite ver correctamente los gráficos. Por
 ```{r}
 aux <- datos %>%
   filter(Income < 500000)
-ggplot(datos) +
+ggplot(aux) +
   geom_boxplot(aes(x = factor(Education), y = Income))
 ```
 Se puede observar cláramente que las personas con un nivel de estudio "Basic" ganan mucho menos que cualquiera de los otros 3 grupos. Otra cosa que hay que tener en cuenta es que entre los 3 grupos restantes no existen deiferencias significativas.
@@ -372,7 +383,8 @@ Estos gráficos reflejan lo visto anteriormente, ya que en todas las secciones, 
 
 
 
-
+\newpage
+# Modelos Predictivos
 
 ***Split del dataset***
 ```{r}
