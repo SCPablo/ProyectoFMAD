@@ -129,7 +129,6 @@ En una segunda fase del preprocesado hemos cambiado algunas columnas mal tipadas
 ```{r}
 datos$Teenhome <- as.numeric(datos$Teenhome)
 datos$Income <- as.numeric(datos$Income)
-datos$Recency <- as.numeric(datos$Recency)
 ```
 
 
