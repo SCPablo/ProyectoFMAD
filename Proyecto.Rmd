@@ -149,7 +149,7 @@ datos <- datos %>%
 ```
 
 
-Además, ya que el conjunto de datos tiene muchas columnas, vamos a eliminar algunas que no nos resultan muy interesantes: "NumDealsPurchases", "Receny", "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5", "Z_CostContact" y "Z_Revenue".
+Además el conjunto de datos tiene muchas columnas las cuales no nos resultan interesantes, por ello vamos a eliminar algunas de ellas: "NumDealsPurchases", "Receny", "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4" y "AcceptedCmp5", "Z_CostContact" y "Z_Revenue".
 
 ```{r}
 datos <- datos %>%
@@ -158,22 +158,28 @@ datos <- datos %>%
 ```
 
 
-En una segunda fase del preprocesado hemos cambiado algunas columnas mal tipadas.
+También como vimos cuando hicimos la visión general de las variables y su tipo, nos dimos cuenta de que algunas de ellas estaban mal tipadas. Por ello cambiaremos el tipado de algunas columnas.
+
 ```{r}
 datos$Teenhome <- as.numeric(datos$Teenhome)
 datos$Income <- as.numeric(datos$Income)
+datos$Complain <- as.factor(datos$Complain)
+datos$Education <- as.factor(datos$Education)
+datos$Response <- as.factor(datos$Response)
 ```
 
 
-Y posteriormente hemos trabajado con algunas columnas para hacerlas más útiles y simplificar el dataset.
-En el conjunto de datos original en vez de aparecer las edades aparecen los años de nacimiento de los clientes. Para un procesamiento mejor y más útil realizaremos un mutate con el fin de generar una nueva columna formada por la edad de los clientes.
+A su vez hemos observado que algunas columnas podrían tener un formato más útil o sencillo, como es el caso del año de nacimiento, donde es mas cómodo trabajar con edades. 
+Por tanto, para un mejor procesamiento y una mayor útilidad realizaremos un mutate para generar una nueva columna formada por la edad de los clientes. A su vez eliminaremos la columna de año de nacimiento.
+
 ```{r}
 datos <- datos %>%
   mutate(edad = 2021 - Year_Birth) %>%
   select(-Year_Birth) 
 ```
 
-Sumaremos el total de niños de cada cliente agrupando las columnas Kidhome y Teenhome
+También nos pareció interesante en vez de distinguir entre número de hijos los cuales son pequeños o son adolescentes, tomarlos como una única variable que nos indique el número de hijos que hay en cada hogar. Para ello sumaremos el total de niños de cada cliente agrupando las columnas Kidhome y Teenhome.
+
 ```{r}
 datos <- datos %>%
   mutate(totalHijos = Kidhome + Teenhome) %>%
@@ -181,32 +187,40 @@ datos <- datos %>%
 ```
 
 
-Cogemos las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el numero de compras hechas en cada sitio, en tiendas, por catalogo y por la web y las sumaremos todas en una única columna que indique el total de compras que ha realizado el cliente.
+Como en el caso de los hijos para las compras haremos algo similar, donde cogeremos las columnas "NumWebPurchases", "NumCatalogPurchases" y "NumStorePurchases" que indican el número de compras hechas en cada sitio, en tiendas, por catalogo y por la web y las sumaremos todas en una única columna que indique el total de compras que ha realizado el cliente.
+
 ```{r}
 datos <- datos %>%
   rowwise(ID) %>%
   mutate(suma_compras = sum(c(NumWebPurchases, NumCatalogPurchases, 
-                              NumStorePurchases))) 
+                              NumStorePurchases))) %>%
+  select(-c(NumWebPurchases, NumCatalogPurchases, NumStorePurchases))
 ```
 
 
 
-Sumamos las columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" para saber cuánto dinero se ha gastado un cliente en total.
+A su vez, para el gasto en los diferentes tipos de producto sumaremos las columans: "MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts",  "MntSweetProducts",  "MntGoldProds" lo cual nos indicara cuánto dinero se ha gastado un cliente en total.
+
 ```{r}
 datos <- datos %>%
   rowwise(ID) %>%
   mutate(Dinero_Gastado = sum(c(MntWines, MntFruits, MntMeatProducts, MntFishProducts, 
                                 MntSweetProducts, MntGoldProds)))
 ```
-Agrupamos el estado civil de cada cliente y lo simplificamos para ver si vive solo o en pareja
+
+
+
+También existe una variable que nos indica el estado civil del cliente, al existir numerosas situaciones nosotros agruparemos el estado civil de cada cliente y lo simplificamos para ver si vive solo o en pareja. Ya que esto nos podrá resultar interesante para análisis posteriores.
+
 ```{r}
 datos <- datos %>%
   mutate(Marital_Status = factor(Marital_Status== "Single" | Marital_Status== "Divorced", 
-                                 levels = c(TRUE, FALSE), labels = c('Single','Not single')))
+                          levels = c(TRUE, FALSE), labels = c('Single','Not single')))
 ```
 
 
-Cambiamos la columna Dt_Customer y establecemos 4 grupos que representan la longevidad del cliente en la empresa
+Por último cambiaremos la columna Dt_Customer y estableceremos 3 grupos que representan la longevidad del cliente en la empresa.
+
 ```{r}
 datos$Dt_Customer = as.Date(datos$Dt_Customer, "%d-%m-%Y")
 fechaMinima = min(datos$Dt_Customer)
@@ -218,12 +232,12 @@ datos$Dt_Customer <-  factor(cut_number(as.duration(datos$Dt_Customer-fechaMinim
 
 
 
-\newpage
+## 3.3. Visualización de los datos
 
-# Visualización de los datos
-En este apartado se realizará el análisis mediante gráficas de las variables según su tipo, viendo si siguen una distribución normal y si presentarían outliers entre otros factores.
+En este apartado lo que realizaremos será un análisis mediante gráficas de las variables según su tipo, viendo si siguen una distribución normal y si presentarían outliers entre otros factores.
 
-Estas son las variables continuas
+Comenzaremos con las variables continuas, que son las siguientes:
+
 ```{r, warning=FALSE, message=FALSE}
 h1 <- ggplot(datos)+
   geom_histogram(aes(x = Income), color = "black", alpha = 0.35)
@@ -245,17 +259,16 @@ h9 <- ggplot(datos)+
   geom_histogram(aes(x = suma_compras ), color = "black", alpha = 0.35)
 h10 <- ggplot(datos)+
   geom_histogram(aes(x = NumWebVisitsMonth ), color = "black", alpha = 0.35)
-h11 <- ggplot(datos)+
-  geom_histogram(aes(x = Complain ), color = "black", alpha = 0.35)
 h12 <- ggplot(datos)+
   geom_histogram(aes(x = edad ), color = "black", alpha = 0.35)
-grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12)
+grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h12)
 ```
 
-Podemos observar en los histogramas que ninguna de las variables sigue una distribución normal. El patrón más común es un gran número de datos con valores pequeños y muchos menos datos a medida que el valor de la variable del eje *x* aumenta. Por este motivo, aunque no los mostremos, podemos deducir que existen outliers en casi todas las variables.
+Podemos observar en los histogramas que ninguna de las variables sigue una distribución normal. El patrón más común es un gran número de datos con valores pequeños y muchos menos datos a medida que el valor de la variable del eje x aumenta. Por este motivo, aunque no los mostremos, podemos deducir que existen outliers en casi todas las variables. Un caso bastante claro de outlier se puede ver en la variable edad donde vemos que el eje x llega a 125 lo cual nos indica que debe existir alguna observación con valor por encima de 115 y menor de 125.
 
 
-Estas son las varibles discretas
+En cuanto a las variables discretas tenemos lo siguiente:
+
 ```{r}
 hb1 <- ggplot(datos)+
   geom_bar(aes(x = Education), color = "black", alpha = 0.35)
@@ -263,29 +276,34 @@ hb2 <- ggplot(datos) +
   geom_bar(aes(x = Marital_Status), color = "black", alpha = 0.35)
 hb3 <- ggplot(datos) + 
   geom_bar(aes(x = Dt_Customer), color = "black", alpha = 0.35)
+hb4 <- ggplot(datos) + 
+  geom_bar(aes(x = Complain), color = "black", alpha = 0.35)
 
-grid.arrange(hb1, hb2, hb3, ncol = 3)
+grid.arrange(hb1, hb2, hb3, hb4, ncol = 2)
 ```
 
-En estas variables podemos observar diferentes patrones. Si miramos la educación de los clientes nos damos cuenta que hay mucha diferencia entre el número de clientes que tienen una educación básica y el resto de tipos, sobre todo los clientes *graduados*. De la misma forma vemos que hay más del doble de clientes *not single* que *sigle*. Por otro lado tenemos que la longividad de los clientes es uniforme.
+En estas variables podemos observar diferentes patrones. Si miramos la educación de los clientes nos damos cuenta que hay mucha diferencia entre el número de clientes que tienen una educación básica y el resto de tipos, sobre todo los clientes graduados. De la misma forma vemos que hay más del doble de clientes not single que single. Por otro lado tenemos que la longividad de los clientes es uniforme. En cuanto a la variable complain observamos que unicamente un porcentaje muy pequeño de los clientes se han quejado durante los dos últimos años.
 
-
-# Buscar la relación posible entre distintas variable y realizr modelos de ML
 
 \newpage
-En esta sección usaremos técnicas de Machine Learning tomando distintos outputs. 
 
-En un primer momento hemos analizado la relación entre tener hijos y los gastos en compras de cada tipo.
+# 3. Análisis Predictivo y Analítica Avanzada
+
+## 3.1. Preprocesamiento
+
+En esta sección nuestro objetivo es usar técnicas de Machine Learning para predecir tendencias y comportamientos sobre diferentes variables que nos puedan resultar interesantes. 
+
+Para ello crearemos un nuevo conjunto de datos sacados de los datos que hemos refinado en la parte anterior. A su vez en un primer momento hemos analizado la relación entre tener hijos y los gastos en compras de cada tipo.
+
 ```{r}
 datos_ML<-datos %>%
   mutate(sonPadres = factor(totalHijos>0, levels = c(FALSE, TRUE), labels = c(0,1)))
 borrar <- c("MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts", "MntSweetProducts", "MntGoldProds","Dinero_Gastado", "sonPadres", "totalHijos")
 datos_ML <- datos_ML[(names(datos_ML) %in% borrar)]
 head(datos_ML) 
-
 ```
 
-Veamos como se relacionan las diferentes variables con las variables de output, empezando por si tienen hijos.
+Lo primero que haremos sera ver como se relacionan las diferentes variables con las variables de output, empezando por si tienen hijos.
 
 ```{r}
 g1 <-ggplot(datos_ML) + 
@@ -326,26 +344,28 @@ gridExtra::grid.arrange(gb1,gb2,gb3,gb4, gb5, gb6, gb7)
 Siguiendo con la relación anterior, observamos que a más hijos menor es el gasto en todos los productos.
 
 
-Vemos la relación entre la edad y los gastos de compras. Primero vamos a ver la distribución de la edad.
+Veamos la relación entre la edad y los gastos de compras. Primero vamos a ver la distribución de la edad.
+
 ```{r}
 ggplot(datos) +
-  geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen", color = "black") +
+  geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen", 
+                 color = "black") +
   geom_density(aes(x = edad), color="red", size=1.5)
-ggplot(datos) + 
-  geom_boxplot(aes(y = edad), fill = "darkblue", color = "black")
 ```
-Como hemos visto que parece que hay un dato mal introducido (ya que no creemos que haya un cliente con 120 años) lo eliminamos y volvemos a examinar los datos
+Como hemos comentado anteriormente existe un valor atípico dentro de nuestra variable, por lo que al unicamente ser uno lo eliminaremos (ya que no afectará a la información) y volvemos a examinar los datos.
+
 ```{r}
 datos <- datos %>%
   filter(edad < 100)
 ggplot(datos) +
-  geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen") +
+  geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen",
+                 color ='black') +
   geom_density(aes(x = edad), color="red", size=1.5)
-ggplot(datos) + 
-  geom_boxplot(aes(y = edad), fill = "darkblue", color = "orange")
 ```
 
-Ahora ya sí podemos analizar los datos.
+
+Observamos que nuestros datos ya tienen una forma que es plausible, por lo que podemos iniciar el análisis de los datos.
+
 ```{r}
 g1 <-ggplot(datos) + 
   geom_jitter(aes(x = edad, y = MntWines))
@@ -367,20 +387,27 @@ En una primera observación podemos ver que el gasto en vino es mucho mayor que 
 Por otra parte, noo parece que existan patrones muy claros en ninguna de las variables. Sin embargo, podríamos decir que las personas de mayor edad gastan más dinero en vino y eso probablemente repercuten en que gasten más dinero en general. 
 
 Realizamos un último estudio en función del nivel de estudios y el estado sentimental. Pero primero vamos a ver cuantos datos hay de cada tipo.
+
 ```{r}
 table(datos$Education, datos$Marital_Status)
+```
+
+```{r}
 ggplot(datos) +
   geom_bar(aes(x = Education, fill = Marital_Status), position = "dodge")
 ```
+
 Anteriormente hemos visto de forma general que el número de clientes con pareja son el doble de los sin pareja, pero ahora vemos esta relación se cumple además, para todos los grupos de niveles de estudio
 
 
-Veamos la relación entre el salario y el nivel de estudios
+Veamos la relación entre el salario y el nivel de estudios:
+
 ```{r}
 ggplot(datos) +
   geom_boxplot(aes(x = factor(Education), y = Income))
 ```
-Vemos que hay un outlier que no nos permite ver correctamente los gráficos. Por este motivo lo quitamos
+
+Vemos que hay un outlier que no nos permite ver correctamente los gráficos. Por este motivo lo quitamos.
 
 ```{r}
 aux <- datos %>%
@@ -393,6 +420,7 @@ Se puede observar cláramente que las personas con un nivel de estudio "Basic" g
 
 
 Por último vemos la relación entre el gasto y el nivel de estudios y la situación sentimental.
+
 ```{r}
 g1 <- ggplot(datos) +
   geom_col(aes(x = Education, y = MntWines, fill = Marital_Status), position = "dodge")
@@ -410,18 +438,27 @@ g7<-ggplot(datos) +
   geom_col(aes(x = Education, y = Dinero_Gastado, fill = Marital_Status), position = "dodge")
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
+
 Estos gráficos reflejan lo visto anteriormente, ya que en todas las secciones, los clientes con un nivel de estudio "Basic" gastan mucho menos dinero que cualquiera de los otros 3 grupos, lo que concuerda con que su salario sea menor. 
 
 
 
+## 3.2. Ajuste parámetros de control
 
-\newpage
-# Modelos Predictivos
+Lo que haremos para para tener siempre un mismo resultado es usar una semilla, en nuestro caso será 2021. Por otro lado para el tema de control usaremos el método de cross-validation con un fold de 10.
 
-***Split del dataset***
 ```{r}
+ctrl <- trainControl(method = "cv", number = 10,summaryFunction = defaultSummary, classProbs = TRUE)
+```
 
-set.seed(150) 
+
+
+## 3.3. Análisis sobre variable sonPadres
+
+Lo primero que haremos será dividir el conjunto de datos en dos, uno para entrenamiento y otro para test.
+
+```{r, warning=FALSE, message=FALSE}
+set.seed(2021) 
 trainIndex <- createDataPartition(datos_ML$sonPadres, p = 0.8, list = FALSE, times = 1) 
 train_set <- datos_ML[trainIndex,]
 test_set <- datos_ML[-trainIndex,]
@@ -429,20 +466,18 @@ train_set_eval <- train_set
 test_set_eval <- test_set
 ```
 
-***Ahora realizamos el control y realizamos el modelo de regresión logística***
-```{r}
-#Control del train 
-ctrl <- trainControl(method = "cv", number = 10,summaryFunction = defaultSummary, classProbs = TRUE) 
+Una vez ya definidos los parámetros de control podemos comenzar con los 
 
-#Regresión logística
+```{r, warning=FALSE, message=FALSE}
+set.seed(2021)
 train_set <- train_set %>%
   mutate(sonPadres = factor(sonPadres == 1, levels = c(TRUE, FALSE), labels = c("Si", "No")))
-LogReg.fit <- train(form = sonPadres ~ ., 
-                    data = train_set,              
-                    method = "glm",                   
-                    preProcess = c("center","scale"), 
-                    trControl = ctrl,                 
-                    metric = "Accuracy") 
+LogReg.fit <- train(form = sonPadres ~ ., data = train_set, method = "glm",                   
+                    preProcess = c("center","scale"), trControl = ctrl, metric = "Accuracy") 
+```
+
+
+```{r, warning=FALSE, message=FALSE}
 LogReg.fit
 summary(LogReg.fit) 
 str(LogReg.fit) 
@@ -450,9 +485,158 @@ boxplot(LogReg.fit$resample$Accuracy, xlab = "Accuracy")
 ```
 
 
+**Nacho por favor explicame por que creamos un cjto de datos nuevos que en si no hace falta y termina tu este modelo que no **
 
 
-Idea: Alomejor ya es un poco de machine learning pero se me ocurre tratar de encontrar al mejor grupo de personas a las que ofrecerles descuentos para aumentar las ventas. Por ejemplo si ves que la gente con ingresos altos compra independientemente de si tiene descuento o no a ese tipo de gente no mandar descuento pero si se ve que otro grupo aumenta el consumo cuando dispone de descuentos centralizar los descuentos en ese grupo. (Espero que se haya entendido)
+## 3.4. Análisis sobre variable Complain
+
+Otro análisis que se puede realizar mediante técnicas de machine learning es encontrar aquellas variables que son claves a la hora de detectar de forma anticipada que clientes se pueden quejar.
+Para ello trabajaremos y realizaremos diferentes modelos de clasificación.
+
+Lo primero antes de iniciar cualquier modelo lo que haremos será ver como está distribuida la variable complain y también cambiarla para poder trabajar con ella:
+
+```{r}
+datos$Complain <- ifelse(datos$Complain == 1, 'Yes','No')
+table(datos$Complain)
+```
+
+
+Tenemos que el dataset está totalmente desbalanceado, para evitar este problema lo que haremos será rebalancear nuestros datos.
+
+```{r}
+set.seed(2021)
+datos_comp_rebal <- ovun.sample(Complain ~ ., data = datos, method = 'both', 
+                                N = table(datos$Complain)[1]*2)$data
+table(datos_comp_rebal$Complain)
+datos_comp_rebal <- datos_comp_rebal %>%
+  select(-ID)
+datos_comp_rebal$Complain <- as.factor(datos_comp_rebal$Complain)
+```
+
+
+Una vez que tenemos los datos rebalanceados podemos pasar al siguiente paso, que consistirá en mirar si tenemos variables que tengan una alta correlación:
+
+
+```{r, warning = FALSE, message = FALSE, fig.align='center'}
+ggcorr(datos_comp_rebal)
+```
+
+Vemos que muchas variables tienen una alta correlación entre si, por ahora no haremos nada pero posteriormente veremos si es necesario eliminar alguna o no.
+
+Una vez hecho esto podemos pasar a la parte de modelos, lo primero que haremos será dividir el conjunto de datos entre entrenamiento y test.
+
+```{r}
+set.seed(2021)
+trainIndex2 <- createDataPartition(datos_comp_rebal$Complain, p = 0.8, list = FALSE, times = 1)
+fTR2 <- datos_comp_rebal[trainIndex2,]
+fTS2 <- datos_comp_rebal[-trainIndex2,] 
+fTR2_eval <- fTR2
+fTS2_eval <- fTS2
+```
+
+Una vez definido tanto el conjunto de entrenamiento como el de test realizaremos un modelo sencillo para ver como se comporta todo, este será una regresión lineal.
+
+```{r, message=FALSE,warning=FALSE}
+set.seed(2021)
+LogReg2.fit <- train(form = Complain ~ ., data = fTR2, method = "glm", 
+                    trControl = ctrl, metric = "Accuracy")  
+LogReg2.fit  
+```
+
+
+```{r}
+summary(LogReg2.fit)
+```
+
+Vemos que las variables importantes en nuestro modelo son el estado civil, la antigüedad del cliente, el consumo en diferentes productos, las veces que visitan la web, si respondes a la ofertas, la edad y el total de compras. Cabe destacar que este modelo solo detecta importancia de variables lineales con el output.
+
+
+
+Evaluamos nuestro modelo para obtener datos más claros.
+
+```{r, warning=FALSE, message=FALSE}
+set.seed(2021)
+fTR2_eval$LRprob <- predict(LogReg2.fit, type="prob", newdata = fTR2)
+fTR2_eval$LRpred <- predict(LogReg2.fit, type="raw", newdata = fTR2)
+fTS2_eval$LRprob <- predict(LogReg2.fit, type="prob", newdata = fTS2) 
+fTS2_eval$LRpred <- predict(LogReg2.fit, type="raw", newdata = fTS2)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+Plot2DClass(fTR2, fTR2$Complain,LogReg2.fit, var1 = "edad", var2 = "Dinero_Gastado",
+            selClass = "Yes")
+```
+
+
+Ahora implementaremos otro modelo, que será el de arbol de decisiones. Este tiene la ventaja de que si nos dará las variables más importantes incluso si tienen relación no lineal con el output.
+
+```{r}
+set.seed(2021)
+tree2.fit <- train(x = fTR2[,c(seq(1,11),seq(13,17))],y = fTR2$Complain,method ="rpart",
+            control=rpart.control(minsplit=20,minbucket = 20), parms = list(split = "gini"),
+            tuneGrid = data.frame(cp = seq(0,0.1,0.001)), trControl = ctrl,metric = "Accuracy")
+ggplot(tree2.fit) 
+```
+
+
+```{r}
+plot(varImp(tree2.fit,scale = FALSE))
+```
+
+```{r}
+set.seed(2021)
+fTR2_eval$tree_prob <- predict(tree2.fit, type="prob", newdata = fTR2) 
+fTR2_eval$tree_pred <- predict(tree2.fit, type="raw", newdata = fTR2)
+fTS2_eval$tree_prob <- predict(tree2.fit, type="prob", newdata = fTS2) 
+fTS2_eval$tree_pred <- predict(tree2.fit, type="raw", newdata = fTS2)
+```
+
+
+
+Por último haremos un modelo solo con las variables más importantes, tanto aquellas que tienen una relación lineal como aquellas que son no lineales. Para una mayor facilidad de comprensión del modelo y viendo como ha salido el último, realizaremos un arbol de decisión.
+
+```{r}
+set.seed(2021)
+tree2_1.fit <- train(x = fTR2[,c(1,3,5,8,9,10,14,17)],y = fTR2$Complain,method ="rpart",
+            control=rpart.control(minsplit=20,minbucket = 20), parms = list(split = "gini"),
+            tuneGrid = data.frame(cp = seq(0,0.1,0.001)), trControl = ctrl,metric = "Accuracy")
+ggplot(tree2_1.fit) 
+```
+
+```{r}
+rpart.plot(tree2_1.fit$finalModel, type = 2, fallen.leaves = FALSE, box.palette = "Oranges")
+```
+
+
+
+```{r}
+set.seed(2021)
+fTR2_eval$tree2_1_prob <- predict(tree2_1.fit, type="prob", newdata = fTR2) 
+fTR2_eval$tree2_1_pred <- predict(tree2_1.fit, type="raw", newdata = fTR2)
+fTS2_eval$tree2_1_prob <- predict(tree2_1.fit, type="prob", newdata = fTS2) 
+fTS2_eval$tree2_1_pred <- predict(tree2_1.fit, type="raw", newdata = fTS2)
+```
+
+
+```{r}
+Plot2DClass(fTR2[,c(1,3,5,8,9,10,14,17)],fTR2$Complain,tree2_1.fit,var1 = "edad", var2 = "Dinero_Gastado", selClass = "Yes")
+```
+
+
+
+```{r}
+confusionMatrix(data = fTR2_eval$tree2_1_pred,reference = fTR2_eval$Complain,positive = "Yes")
+```
+
+
+
+
+```{r}
+set.seed(2021)
+confusionMatrix(data = fTS2_eval$tree2_1_pred,reference = fTS2_eval$Complain,positive = "Yes")
+```
+
 
 
 
