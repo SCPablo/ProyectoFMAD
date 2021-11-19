@@ -34,6 +34,7 @@ library(tidyverse)
 library(lubridate)
 library(caret)
 library(grid)
+library(corrplot)
 library(gridExtra)
 library(ROCR)
 library(MLTools)
@@ -384,7 +385,7 @@ g7<-ggplot(datos) +
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
 En una primera observación podemos ver que el gasto en vino es mucho mayor que en cualquiera de las otras secciones y para cualquier edad.
-Por otra parte, noo parece que existan patrones muy claros en ninguna de las variables. Sin embargo, podríamos decir que las personas de mayor edad gastan más dinero en vino y eso probablemente repercuten en que gasten más dinero en general. 
+Por otra parte, no parece que existan patrones muy claros en ninguna de las variables. Sin embargo, podríamos decir que las personas de mayor edad gastan más dinero en vino y eso probablemente repercute en que gasten más dinero en general. 
 
 Realizamos un último estudio en función del nivel de estudios y el estado sentimental. Pero primero vamos a ver cuantos datos hay de cada tipo.
 
@@ -448,52 +449,18 @@ Estos gráficos reflejan lo visto anteriormente, ya que en todas las secciones, 
 Lo que haremos para para tener siempre un mismo resultado es usar una semilla, en nuestro caso será 2021. Por otro lado para el tema de control usaremos el método de cross-validation con un fold de 10.
 
 ```{r}
-ctrl <- trainControl(method = "cv", number = 10,summaryFunction = defaultSummary, classProbs = TRUE)
+ctrl <- trainControl(method = "cv",number = 10,summaryFunction = defaultSummary,
+                     classProbs = TRUE)
 ```
 
+\newpage
 
-
-## 3.3. Análisis sobre variable sonPadres
-
-Lo primero que haremos será dividir el conjunto de datos en dos, uno para entrenamiento y otro para test.
-
-```{r, warning=FALSE, message=FALSE}
-set.seed(2021) 
-trainIndex <- createDataPartition(datos_ML$sonPadres, p = 0.8, list = FALSE, times = 1) 
-train_set <- datos_ML[trainIndex,]
-test_set <- datos_ML[-trainIndex,]
-train_set_eval <- train_set
-test_set_eval <- test_set
-```
-
-Una vez ya definidos los parámetros de control podemos comenzar con los 
-
-```{r, warning=FALSE, message=FALSE}
-set.seed(2021)
-train_set <- train_set %>%
-  mutate(sonPadres = factor(sonPadres == 1, levels = c(TRUE, FALSE), labels = c("Si", "No")))
-LogReg.fit <- train(form = sonPadres ~ ., data = train_set, method = "glm",                   
-                    preProcess = c("center","scale"), trControl = ctrl, metric = "Accuracy") 
-```
-
-
-```{r, warning=FALSE, message=FALSE}
-LogReg.fit
-summary(LogReg.fit) 
-str(LogReg.fit) 
-boxplot(LogReg.fit$resample$Accuracy, xlab = "Accuracy")
-```
-
-
-**Nacho por favor explicame por que creamos un cjto de datos nuevos que en si no hace falta y termina tu este modelo que no **
-
-
-## 3.4. Análisis sobre variable Complain
+## 3.3. Análisis sobre variable Complain
 
 Otro análisis que se puede realizar mediante técnicas de machine learning es encontrar aquellas variables que son claves a la hora de detectar de forma anticipada que clientes se pueden quejar.
 Para ello trabajaremos y realizaremos diferentes modelos de clasificación.
 
-Lo primero antes de iniciar cualquier modelo lo que haremos será ver como está distribuida la variable complain y también cambiarla para poder trabajar con ella:
+Lo primero antes de iniciar cualquier modelo, será ver como está distribuida la variable complain y también cambiarla para poder trabajar con ella:
 
 ```{r}
 datos$Complain <- ifelse(datos$Complain == 1, 'Yes','No')
@@ -501,7 +468,7 @@ table(datos$Complain)
 ```
 
 
-Tenemos que el dataset está totalmente desbalanceado, para evitar este problema lo que haremos será rebalancear nuestros datos.
+Tenemos que el dataset está totalmente desbalanceado, para evitar este problema lo que haremos será rebalancear nuestros datos. Esto nos puede generar alguna anomalía ya que estamos tratando los datos iniciales.
 
 ```{r}
 set.seed(2021)
@@ -514,11 +481,14 @@ datos_comp_rebal$Complain <- as.factor(datos_comp_rebal$Complain)
 ```
 
 
-Una vez que tenemos los datos rebalanceados podemos pasar al siguiente paso, que consistirá en mirar si tenemos variables que tengan una alta correlación:
+Una vez que tenemos los datos rebalanceados podemos pasar al siguiente paso, que consistirá en mirar si tenemos variables que tengan una alta correlación: 
 
 
-```{r, warning = FALSE, message = FALSE, fig.align='center'}
-ggcorr(datos_comp_rebal)
+```{r, warning = FALSE, message = FALSE, fig.align='center', fig.dim=c(4,4)}
+catvars <- sapply(datos_comp_rebal, class) %in% c("character","factpr")
+numvars <- sapply(datos_comp_rebal, class) %in% c("integer","numeric")
+C <- cor(datos_comp_rebal[,numvars])
+corrplot(C, method = "circle")
 ```
 
 Vemos que muchas variables tienen una alta correlación entre si, por ahora no haremos nada pero posteriormente veremos si es necesario eliminar alguna o no.
@@ -534,18 +504,19 @@ fTR2_eval <- fTR2
 fTS2_eval <- fTS2
 ```
 
-Una vez definido tanto el conjunto de entrenamiento como el de test realizaremos un modelo sencillo para ver como se comporta todo, este será una regresión lineal.
+Una vez definido tanto el conjunto de entrenamiento como el de test realizaremos un modelo sencillo para ver cómo se comporta todo, este será una regresión logística. A su vez también usaremos como método de control un cross-validation con un fold de 10.
 
 ```{r, message=FALSE,warning=FALSE}
 set.seed(2021)
-LogReg2.fit <- train(form = Complain ~ ., data = fTR2, method = "glm", 
+LogReg.fit <- train(form = Complain ~ . , data = fTR2, method = "glm", 
                     trControl = ctrl, metric = "Accuracy")  
-LogReg2.fit  
+LogReg.fit  
 ```
 
+Podemos observar que nuestro primer modelo, donde tenemos todas las variables, nos devuelve un accuracy de 0.695. Lo cual no esta mal para empezar, pero vayamos a lo que realmente nos interesa, que variables son importantes.
 
 ```{r}
-summary(LogReg2.fit)
+summary(LogReg.fit)
 ```
 
 Vemos que las variables importantes en nuestro modelo son el estado civil, la antigüedad del cliente, el consumo en diferentes productos, las veces que visitan la web, si respondes a la ofertas, la edad y el total de compras. Cabe destacar que este modelo solo detecta importancia de variables lineales con el output.
@@ -556,22 +527,16 @@ Evaluamos nuestro modelo para obtener datos más claros.
 
 ```{r, warning=FALSE, message=FALSE}
 set.seed(2021)
-fTR2_eval$LRprob <- predict(LogReg2.fit, type="prob", newdata = fTR2)
-fTR2_eval$LRpred <- predict(LogReg2.fit, type="raw", newdata = fTR2)
-fTS2_eval$LRprob <- predict(LogReg2.fit, type="prob", newdata = fTS2) 
-fTS2_eval$LRpred <- predict(LogReg2.fit, type="raw", newdata = fTS2)
-```
-
-
-```{r, warning=FALSE, message=FALSE}
-Plot2DClass(fTR2, fTR2$Complain,LogReg2.fit, var1 = "edad", var2 = "Dinero_Gastado",
-            selClass = "Yes")
+fTR2_eval$LRprob <- predict(LogReg.fit, type="prob", newdata = fTR2)
+fTR2_eval$LRpred <- predict(LogReg.fit, type="raw", newdata = fTR2)
+fTS2_eval$LRprob <- predict(LogReg.fit, type="prob", newdata = fTS2) 
+fTS2_eval$LRpred <- predict(LogReg.fit, type="raw", newdata = fTS2)
 ```
 
 
 Ahora implementaremos otro modelo, que será el de arbol de decisiones. Este tiene la ventaja de que si nos dará las variables más importantes incluso si tienen relación no lineal con el output.
 
-```{r}
+```{r, fig.dim=c(4,3), fig.align='center'}
 set.seed(2021)
 tree2.fit <- train(x = fTR2[,c(seq(1,11),seq(13,17))],y = fTR2$Complain,method ="rpart",
             control=rpart.control(minsplit=20,minbucket = 20), parms = list(split = "gini"),
@@ -579,24 +544,20 @@ tree2.fit <- train(x = fTR2[,c(seq(1,11),seq(13,17))],y = fTR2$Complain,method =
 ggplot(tree2.fit) 
 ```
 
+Podemos observar que este modelo tiene un accuracy aproximado de 0.97 con un hiperparámetro c igual a 0. Elegimos $c = 0$ ya que es el valor que maximiza el accuracy.
 
-```{r}
+A continuación veremos que variables son importantes, donde entrarán también en juego aquellas variables las cuales tengan relaciones no lineales con nuestro output.
+
+
+```{r, fig.align='center'}
 plot(varImp(tree2.fit,scale = FALSE))
 ```
-
-```{r}
-set.seed(2021)
-fTR2_eval$tree_prob <- predict(tree2.fit, type="prob", newdata = fTR2) 
-fTR2_eval$tree_pred <- predict(tree2.fit, type="raw", newdata = fTR2)
-fTS2_eval$tree_prob <- predict(tree2.fit, type="prob", newdata = fTS2) 
-fTS2_eval$tree_pred <- predict(tree2.fit, type="raw", newdata = fTS2)
-```
-
+Obtenemos que las variables más importantes son el consumo de productos "gourmet", carne y vino así como también la edad, los ingresos y el dinero gastado.
 
 
 Por último haremos un modelo solo con las variables más importantes, tanto aquellas que tienen una relación lineal como aquellas que son no lineales. Para una mayor facilidad de comprensión del modelo y viendo como ha salido el último, realizaremos un arbol de decisión.
 
-```{r}
+```{r,fig.dim=c(5,3.5), fig.align='center'}
 set.seed(2021)
 tree2_1.fit <- train(x = fTR2[,c(1,3,5,8,9,10,14,17)],y = fTR2$Complain,method ="rpart",
             control=rpart.control(minsplit=20,minbucket = 20), parms = list(split = "gini"),
@@ -604,11 +565,15 @@ tree2_1.fit <- train(x = fTR2[,c(1,3,5,8,9,10,14,17)],y = fTR2$Complain,method =
 ggplot(tree2_1.fit) 
 ```
 
+En este caso vemos que el accuracy no varía y que se vuelve a coger el mismo valor de hiperparámetro.
+
+Veamos como esta construido nuestro modelo de arbol de decisión:
+
 ```{r}
 rpart.plot(tree2_1.fit$finalModel, type = 2, fallen.leaves = FALSE, box.palette = "Oranges")
 ```
 
-
+Por último haremos como en el caso de la regresión logística, donde representamos graficamente la predicción frente a los valores reales de cada observación.
 
 ```{r}
 set.seed(2021)
@@ -623,7 +588,7 @@ fTS2_eval$tree2_1_pred <- predict(tree2_1.fit, type="raw", newdata = fTS2)
 Plot2DClass(fTR2[,c(1,3,5,8,9,10,14,17)],fTR2$Complain,tree2_1.fit,var1 = "edad", var2 = "Dinero_Gastado", selClass = "Yes")
 ```
 
-
+A su vez, para ver que tal trabaja tanto en training como en test sacaremos ambas matrices de confusión:
 
 ```{r}
 confusionMatrix(data = fTR2_eval$tree2_1_pred,reference = fTR2_eval$Complain,positive = "Yes")
@@ -638,7 +603,10 @@ confusionMatrix(data = fTS2_eval$tree2_1_pred,reference = fTS2_eval$Complain,pos
 ```
 
 
+Por tanto, podemos afirmar que las variables que más importancia tienen para detectar que un cliente se va a quejar en un futuro son el gasto en productos "gourmet" y vino así como la edad, los ingresos y el dinero gastado. Esto se puede ver en la siguiente imagen:
 
-
+```{r}
+plot(varImp(tree2_1.fit,scale = FALSE))
+```
 
 
