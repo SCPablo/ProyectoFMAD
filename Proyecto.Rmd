@@ -2,7 +2,7 @@
 title: "Proyecto FMAD"
 subtitle: ICAI. Máster en Big Data. Fundamentos Matemáticos del Análisis de Datos
   (FMAD).
-author: Alvaro Rodriguez Gonzalez, Ignacio Perez-Cea, Pablo Sanz Caperote
+author: Álvaro Rodríguez González, Ignacio Perez-Cea, Pablo Sanz Caperote
 date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
 linestretch: "1.25"
 header-includes:
@@ -11,7 +11,6 @@ output:
   pdf_document: default
   html_document: default
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -24,7 +23,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1. Introducción
 
-Lo primero que haremos será cargar las diferentes librerias que usaremos para nuestro proyecto. Entre ellas encontraremos librerias públicas como tidyverse y algunas privadas como MLTools:
+El principal objetivo de este proyecto es plasmar los conocimientos adquiridos durante la primera parte del curso en la asignatura de Fundamentos Matemáticos del Análisis de Datos. Para ello trabajaremos sobre un dataset de campañas de marketing en EEUU. 
+
+Nuestra idea es primero realizar un breve estudio de nuestras variables, donde realizaremos cambios en caso de considerarlo oportuno (usando el paquete tidyverse), este estudio será tanto gráfico como no gráfico.
+
+Una vez que hemos realizado la limpieza de los datos, realizaremos un análisis gráfico sobre el comportamiento de las variables así como también sobre alguna posible relación que nos resulte interesante.
+
+Para terminar el proyecto aplicaremos técnicas de Machine Learning que hemos aprendido durante la segunda parte del cuatrimestre.
+
+Antes de iniciar el breve estudio, lo que haremos será cargar las diferentes librerias que usaremos para nuestro proyecto. Entre ellas encontraremos librerias públicas como tidyverse y algunas privadas como MLTools:
 
 
 ```{r, warning=FALSE,message=FALSE}
@@ -49,7 +56,7 @@ library(randomForest)
 ```
 
 
-A continuación leeremos los datos con los que trabajaremos:
+A su vez tambien leeremos los datos con los que trabajaremos:
 
 ```{r}
 datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
@@ -59,7 +66,7 @@ datos <- read.csv("marketing_campaign.csv", header = TRUE, sep = "")
 
 # 2. Definición de las variables
 
-Antes de comenzar con el preprocesamiento de los datos lo que haremos será listar las variables y lo que representa cada una de ella:
+Antes de comenzar con el preprocesamiento de los datos lo que haremos será listar las variables y lo que representa cada una de ellas:
 
 - **ID**: El ID del cliente.
 
@@ -237,7 +244,7 @@ En este apartado lo que realizaremos será un análisis mediante gráficas de la
 
 Comenzaremos con las variables continuas, que son las siguientes:
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, fig.cap="Gráfico variables continuas"}
 h1 <- ggplot(datos)+
   geom_histogram(aes(x = Income), color = "black", alpha = 0.35)
 h2 <- ggplot(datos)+
@@ -268,7 +275,7 @@ Podemos observar en los histogramas que ninguna de las variables sigue una distr
 
 En cuanto a las variables discretas tenemos lo siguiente:
 
-```{r}
+```{r, fig.cap="Gráfico variables discretas", fig.align='center'}
 hb1 <- ggplot(datos)+
   geom_bar(aes(x = Education), color = "black", alpha = 0.35)
 hb2 <- ggplot(datos) + 
@@ -277,20 +284,18 @@ hb3 <- ggplot(datos) +
   geom_bar(aes(x = Dt_Customer), color = "black", alpha = 0.35)
 hb4 <- ggplot(datos) + 
   geom_bar(aes(x = Complain), color = "black", alpha = 0.35)
-
 grid.arrange(hb1, hb2, hb3, hb4, ncol = 2)
 ```
-
 En estas variables podemos observar diferentes patrones. Si miramos la educación de los clientes nos damos cuenta que hay mucha diferencia entre el número de clientes que tienen una educación básica y el resto de tipos, sobre todo los clientes graduados. De la misma forma vemos que hay más del doble de clientes not single que single. Por otro lado tenemos que la longividad de los clientes es uniforme. En cuanto a la variable complain observamos que unicamente un porcentaje muy pequeño de los clientes se han quejado durante los dos últimos años.
-
 
 \newpage
 
-# 4. Análisis Predictivo y Analítica Avanzada
+# 4. Análisis Gráfico
 
-## 4.1. Preprocesamiento
+En esta sección nuestro objetivo será sacar conclusiones acerca de diversas variables así como de posibles relaciones entre estas. Nuestros principales apoyos para sacar dichas conclusiones serán los elementos gráficos (histogramas, boxplot, tablas, etc). 
 
-En esta sección nuestro objetivo es usar técnicas de Machine Learning para predecir tendencias y comportamientos sobre diferentes variables que nos puedan resultar interesantes. 
+
+## 4.1. Relación nº de hijos, gasto y estudios.
 
 Para ello crearemos un nuevo conjunto de datos sacados de los datos que hemos refinado en la parte anterior. A su vez en un primer momento hemos analizado la relación entre tener hijos y los gastos en compras de cada tipo.
 
@@ -306,7 +311,7 @@ head(datos_ML)
 
 Lo primero que haremos sera ver como se relacionan las diferentes variables con las variables de output, empezando por si tienen hijos.
 
-```{r}
+```{r, fig.cap="Gráfico relaciones variables"}
 g1 <-ggplot(datos_ML) + 
   geom_boxplot(aes(x = sonPadres, y = MntWines))
 g2<-ggplot(datos_ML) + 
@@ -323,9 +328,10 @@ g7<-ggplot(datos_ML) +
   geom_boxplot(aes(x = sonPadres, y = Dinero_Gastado))
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
+
 Vemos que si los clientes tienen hijos, el gasto en todos los productos se reduce. Pero ya que hemos llegado hasta aquí, queremos además observar la relación entre el número de hijos y dichos gastos. Veamos los siguientes gráficos.
 
-```{r}
+```{r, fig.cap="Gráfico relación nº hijos y gasto"}
 gb1 <-ggplot(datos_ML) + 
   geom_boxplot(aes(x = factor(totalHijos), y = MntWines))
 gb2<-ggplot(datos_ML) + 
@@ -342,20 +348,22 @@ gb7<-ggplot(datos_ML) +
   geom_boxplot(aes(x = factor(totalHijos), y = Dinero_Gastado))
 gridExtra::grid.arrange(gb1,gb2,gb3,gb4, gb5, gb6, gb7)
 ```
+
 Siguiendo con la relación anterior, observamos que a más hijos menor es el gasto en todos los productos.
 
 
 Veamos la relación entre la edad y los gastos de compras. Primero vamos a ver la distribución de la edad.
 
-```{r}
+```{r, fig.cap="Distribución edad"}
 ggplot(datos) +
   geom_histogram(aes(x = edad, y =stat(density)), bins = 15, fill = "darkgreen", 
                  color = "black") +
   geom_density(aes(x = edad), color="red", size=1.5)
 ```
+
 Como hemos comentado anteriormente existe un valor atípico dentro de nuestra variable, por lo que al unicamente ser uno lo eliminaremos (ya que no afectará a la información) y volvemos a examinar los datos.
 
-```{r}
+```{r, fig.cap="Distribución edad retocado"}
 datos <- datos %>%
   filter(edad < 100)
 ggplot(datos) +
@@ -367,7 +375,7 @@ ggplot(datos) +
 
 Observamos que nuestros datos ya tienen una forma que es plausible, por lo que podemos iniciar el análisis de los datos.
 
-```{r}
+```{r, fig.cap="Gráfico edad y gasto por productos"}
 g1 <-ggplot(datos) + 
   geom_jitter(aes(x = edad, y = MntWines))
 g2<-ggplot(datos) + 
@@ -384,7 +392,9 @@ g7<-ggplot(datos) +
   geom_jitter(aes(x = edad, y = Dinero_Gastado))
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
+
 En una primera observación podemos ver que el gasto en vino es mucho mayor que en cualquiera de las otras secciones y para cualquier edad.
+
 Por otra parte, no parece que existan patrones muy claros en ninguna de las variables. Sin embargo, podríamos decir que las personas de mayor edad gastan más dinero en vino y eso probablemente repercute en que gasten más dinero en general. 
 
 Realizamos un último estudio en función del nivel de estudios y el estado sentimental. Pero primero vamos a ver cuantos datos hay de cada tipo.
@@ -393,7 +403,7 @@ Realizamos un último estudio en función del nivel de estudios y el estado sent
 table(datos$Education, datos$Marital_Status)
 ```
 
-```{r}
+```{r, fig.cap="Relación educación y estado civil"}
 ggplot(datos) +
   geom_bar(aes(x = Education, fill = Marital_Status), position = "dodge")
 ```
@@ -403,40 +413,40 @@ Anteriormente hemos visto de forma general que el número de clientes con pareja
 
 Veamos la relación entre el salario y el nivel de estudios:
 
-```{r}
+```{r, fig.cap="Relación salario y nivel de estudios"}
 ggplot(datos) +
   geom_boxplot(aes(x = factor(Education), y = Income))
 ```
 
 Vemos que hay un outlier que no nos permite ver correctamente los gráficos. Por este motivo lo quitamos.
 
-```{r}
+```{r, fig.cap="Modificación outlier"}
 aux <- datos %>%
   filter(Income < 500000)
 ggplot(aux) +
   geom_boxplot(aes(x = factor(Education), y = Income))
 ```
-Se puede observar cláramente que las personas con un nivel de estudio "Basic" ganan mucho menos que cualquiera de los otros 3 grupos. Otra cosa que hay que tener en cuenta es que entre los 3 grupos restantes no existen deiferencias significativas.
 
+Se puede observar cláramente que las personas con un nivel de estudio "Basic" ganan mucho menos que cualquiera de los otros 3 grupos. Otra cosa que hay que tener en cuenta es que entre los 3 grupos restantes no existen deiferencias significativas.
 
 
 Por último vemos la relación entre el gasto y el nivel de estudios y la situación sentimental.
 
-```{r}
+```{r, fig.cap="Relación gasto y nivel de estudios"}
 g1 <- ggplot(datos) +
-  geom_col(aes(x = Education, y = MntWines, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = MntWines, fill = Marital_Status),position = "dodge")
 g2<-ggplot(datos) + 
-  geom_col(aes(x = Education, y = MntFruits, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = MntFruits, fill = Marital_Status),position = "dodge")
 g3<-ggplot(datos) + 
-  geom_col(aes(x = Education, y = MntMeatProducts, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = MntMeatProducts, fill = Marital_Status),position = "dodge")
 g4<-ggplot(datos) + 
-  geom_col(aes(x = Education, y = MntFishProducts, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = MntFishProducts, fill = Marital_Status),position = "dodge")
 g5<-ggplot(datos) + 
-  geom_col(aes(x = Education, y = MntSweetProducts, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = MntSweetProducts, fill = Marital_Status),position = "dodge")
 g6<-ggplot(datos) + 
-  geom_col(aes(x = Education, y = MntGoldProds, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = MntGoldProds, fill = Marital_Status),position = "dodge")
 g7<-ggplot(datos) + 
-  geom_col(aes(x = Education, y = Dinero_Gastado, fill = Marital_Status), position = "dodge")
+  geom_col(aes(x = Education, y = Dinero_Gastado, fill = Marital_Status),position = "dodge")
 gridExtra::grid.arrange(g1,g2,g3,g4, g5, g6, g7)
 ```
 
@@ -444,7 +454,15 @@ Estos gráficos reflejan lo visto anteriormente, ya que en todas las secciones, 
 
 
 
-## 4.2. Ajuste parámetros de control
+
+\newpage
+
+# 5. Análisis Predictivo y Analítica Avanzada
+
+En esta sección nuestro objetivo es usar técnicas de Machine Learning para predecir tendencias y comportamientos sobre diferentes variables que nos puedan resultar interesantes. Antes de iniciar cualquier estudio lo que haremos será definir nuestros parámetros de control. 
+
+
+## 5.1. Ajuste parámetros de control
 
 Lo que haremos para para tener siempre un mismo resultado es usar una semilla, en nuestro caso será 2021. Por otro lado para el tema de control usaremos el método de cross-validation con un fold de 10.
 
@@ -453,9 +471,8 @@ ctrl <- trainControl(method = "cv",number = 10,summaryFunction = defaultSummary,
                      classProbs = TRUE)
 ```
 
-\newpage
 
-## 4.3. Análisis sobre variable Complain
+## 5.2. Análisis sobre variable Complain
 
 Otro análisis que se puede realizar mediante técnicas de machine learning es encontrar aquellas variables que son claves a la hora de detectar de forma anticipada que clientes se pueden quejar.
 Para ello trabajaremos y realizaremos diferentes modelos de clasificación.
@@ -484,7 +501,7 @@ datos_comp_rebal$Complain <- as.factor(datos_comp_rebal$Complain)
 Una vez que tenemos los datos rebalanceados podemos pasar al siguiente paso, que consistirá en mirar si tenemos variables que tengan una alta correlación: 
 
 
-```{r, warning = FALSE, message = FALSE, fig.align='center', fig.dim=c(4,4)}
+```{r, warning = FALSE, message = FALSE, fig.align='center', fig.dim=c(5,5), fig.cap="Gráfico de correlación"}
 catvars <- sapply(datos_comp_rebal, class) %in% c("character","factpr")
 numvars <- sapply(datos_comp_rebal, class) %in% c("integer","numeric")
 C <- cor(datos_comp_rebal[,numvars])
@@ -504,9 +521,11 @@ fTR2_eval <- fTR2
 fTS2_eval <- fTS2
 ```
 
+\newpage 
+
 Una vez definido tanto el conjunto de entrenamiento como el de test realizaremos un modelo sencillo para ver cómo se comporta todo, este será una regresión logística. A su vez también usaremos como método de control un cross-validation con un fold de 10.
 
-```{r, message=FALSE,warning=FALSE}
+```{r, message=FALSE,warning=FALSE, fig.cap="Gráfico de selección hiperparámetro"}
 set.seed(2021)
 LogReg.fit <- train(form = Complain ~ . , data = fTR2, method = "glm", 
                     trControl = ctrl, metric = "Accuracy")  
@@ -536,7 +555,7 @@ fTS2_eval$LRpred <- predict(LogReg.fit, type="raw", newdata = fTS2)
 
 Ahora implementaremos otro modelo, que será el de arbol de decisiones. Este tiene la ventaja de que si nos dará las variables más importantes incluso si tienen relación no lineal con el output.
 
-```{r, fig.dim=c(4,3), fig.align='center'}
+```{r, fig.dim=c(4.5,3.5), fig.align='center', fig.cap="Gráfico de selección hiperparámetro"}
 set.seed(2021)
 tree2.fit <- train(x = fTR2[,c(seq(1,11),seq(13,17))],y = fTR2$Complain,method ="rpart",
             control=rpart.control(minsplit=20,minbucket = 20), parms = list(split = "gini"),
@@ -549,15 +568,18 @@ Podemos observar que este modelo tiene un accuracy aproximado de 0.97 con un hip
 A continuación veremos que variables son importantes, donde entrarán también en juego aquellas variables las cuales tengan relaciones no lineales con nuestro output.
 
 
-```{r, fig.align='center'}
+```{r, fig.align='center',fig.cap="Importancia de variables", fig.dim=c(5,3.2)}
 plot(varImp(tree2.fit,scale = FALSE))
 ```
+
+\newpage
+
 Obtenemos que las variables más importantes son el consumo de productos "gourmet", carne y vino así como también la edad, los ingresos y el dinero gastado.
 
 
 Por último haremos un modelo solo con las variables más importantes, tanto aquellas que tienen una relación lineal como aquellas que son no lineales. Para una mayor facilidad de comprensión del modelo y viendo como ha salido el último, realizaremos un arbol de decisión.
 
-```{r,fig.dim=c(5,3.5), fig.align='center'}
+```{r,fig.dim=c(5,4), fig.align='center', fig.cap="Gráfico de selección hiperparámetro"}
 set.seed(2021)
 tree2_1.fit <- train(x = fTR2[,c(1,3,5,8,9,10,14,17)],y = fTR2$Complain,method ="rpart",
             control=rpart.control(minsplit=20,minbucket = 20), parms = list(split = "gini"),
@@ -565,11 +587,14 @@ tree2_1.fit <- train(x = fTR2[,c(1,3,5,8,9,10,14,17)],y = fTR2$Complain,method =
 ggplot(tree2_1.fit) 
 ```
 
+
+\newpage 
+
 En este caso vemos que el accuracy no varía y que se vuelve a coger el mismo valor de hiperparámetro.
 
 Veamos como esta construido nuestro modelo de arbol de decisión:
 
-```{r}
+```{r,fig.align='center', fig.cap= "Estructura Arbol de Decisión"}
 rpart.plot(tree2_1.fit$finalModel, type = 2, fallen.leaves = FALSE, box.palette = "Oranges")
 ```
 
@@ -584,9 +609,12 @@ fTS2_eval$tree2_1_pred <- predict(tree2_1.fit, type="raw", newdata = fTS2)
 ```
 
 
-```{r}
-Plot2DClass(fTR2[,c(1,3,5,8,9,10,14,17)],fTR2$Complain,tree2_1.fit,var1 = "edad", var2 = "Dinero_Gastado", selClass = "Yes")
+```{r, fig.cap="Gráfico de predicción"}
+Plot2DClass(fTR2[,c(1,3,5,8,9,10,14,17)],fTR2$Complain,tree2_1.fit,var1 = "edad", 
+            var2 = "Dinero_Gastado", selClass = "Yes")
 ```
+
+\newpage
 
 A su vez, para ver que tal trabaja tanto en training como en test sacaremos ambas matrices de confusión:
 
@@ -605,8 +633,11 @@ confusionMatrix(data = fTS2_eval$tree2_1_pred,reference = fTS2_eval$Complain,pos
 
 Por tanto, podemos afirmar que las variables que más importancia tienen para detectar que un cliente se va a quejar en un futuro son el gasto en productos "gourmet" y vino así como la edad, los ingresos y el dinero gastado. Esto se puede ver en la siguiente imagen:
 
-```{r}
+```{r, fig.cap="Gráfico importancia varibales"}
 plot(varImp(tree2_1.fit,scale = FALSE))
 ```
 
+\newpage
+\tableoffigures
+\newpage
 
