@@ -295,7 +295,7 @@ En estas variables podemos observar diferentes patrones. Si miramos la educació
 En esta sección nuestro objetivo será sacar conclusiones acerca de diversas variables así como de posibles relaciones entre estas. Nuestros principales apoyos para sacar dichas conclusiones serán los elementos gráficos (histogramas, boxplot, tablas, etc). 
 
 
-## 4.1. Relación nº de hijos, gasto y estudios.
+## 4.1. Relacción nº de hijos, gasto y estudios.
 
 Para ello crearemos un nuevo conjunto de datos sacados de los datos que hemos refinado en la parte anterior. A su vez en un primer momento hemos analizado la relación entre tener hijos y los gastos en compras de cada tipo.
 
@@ -637,7 +637,5 @@ Por tanto, podemos afirmar que las variables que más importancia tienen para de
 plot(varImp(tree2_1.fit,scale = FALSE))
 ```
 
-\newpage
-\tableoffigures
-\newpage
+
 
