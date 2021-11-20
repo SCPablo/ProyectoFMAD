@@ -2,6 +2,7 @@
 title: "Proyecto FMAD"
 subtitle: ICAI. Máster en Big Data. Fundamentos Matemáticos del Análisis de Datos
   (FMAD).
+author: Alvaro Rodriguez Gonzalez, Ignacio Perez-Cea, Pablo Sanz Caperote
 date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
 linestretch: "1.25"
 header-includes:
@@ -288,9 +289,9 @@ En estas variables podemos observar diferentes patrones. Si miramos la educació
 
 \newpage
 
-# 3. Análisis Predictivo y Analítica Avanzada
+# 4. Análisis Predictivo y Analítica Avanzada
 
-## 3.1. Preprocesamiento
+## 4.1. Preprocesamiento
 
 En esta sección nuestro objetivo es usar técnicas de Machine Learning para predecir tendencias y comportamientos sobre diferentes variables que nos puedan resultar interesantes. 
 
@@ -299,7 +300,9 @@ Para ello crearemos un nuevo conjunto de datos sacados de los datos que hemos re
 ```{r}
 datos_ML<-datos %>%
   mutate(sonPadres = factor(totalHijos>0, levels = c(FALSE, TRUE), labels = c(0,1)))
-borrar <- c("MntWines", "MntFruits", "MntMeatProducts",  "MntFishProducts", "MntSweetProducts", "MntGoldProds","Dinero_Gastado", "sonPadres", "totalHijos")
+borrar <- c("MntWines", "MntFruits", "MntMeatProducts",
+            "MntFishProducts", "MntSweetProducts",
+            "MntGoldProds","Dinero_Gastado", "sonPadres", "totalHijos")
 datos_ML <- datos_ML[(names(datos_ML) %in% borrar)]
 head(datos_ML) 
 ```
@@ -444,7 +447,7 @@ Estos gráficos reflejan lo visto anteriormente, ya que en todas las secciones, 
 
 
 
-## 3.2. Ajuste parámetros de control
+## 4.2. Ajuste parámetros de control
 
 Lo que haremos para para tener siempre un mismo resultado es usar una semilla, en nuestro caso será 2021. Por otro lado para el tema de control usaremos el método de cross-validation con un fold de 10.
 
@@ -455,7 +458,7 @@ ctrl <- trainControl(method = "cv",number = 10,summaryFunction = defaultSummary,
 
 \newpage
 
-## 3.3. Análisis sobre variable Complain
+## 4.3. Análisis sobre variable Complain
 
 Otro análisis que se puede realizar mediante técnicas de machine learning es encontrar aquellas variables que son claves a la hora de detectar de forma anticipada que clientes se pueden quejar.
 Para ello trabajaremos y realizaremos diferentes modelos de clasificación.
