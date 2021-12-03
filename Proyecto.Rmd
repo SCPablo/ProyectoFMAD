@@ -510,6 +510,19 @@ corrplot(C, method = "circle")
 
 Vemos que muchas variables tienen una alta correlación entre si, por ahora no haremos nada pero posteriormente veremos si es necesario eliminar alguna o no.
 
+Una vez hecho esto podemos pasar a la parte probabilidad y de modelos, lo primero que haremos será calcular la probabilidad de que se queje si tiene hijos y luego, pasaremos a dividir el conjunto de datos entre entrenamiento y test.
+
+Al realizar el análisis de probabilidades de ser padre y quejarse, obsevamos que la probabilidad de quejarse sin tener hijos es muy pequeña, por lo que se puede afirmar que el hecho de tener hijos puede afectar al caracter de los padres, haciéndolos más irritables.
+
+```{r}
+datos_prob<-datos %>%
+  mutate(sonPadres = factor(totalHijos>0, levels = c(FALSE, TRUE), labels = c(0,1)))
+tabla <- table(datos_prob$Complain, datos_prob$sonPadres)
+prop.table(tabla)
+```
+
+ Tras realizar un análisis probabilístico básico, pasamod a la división del dataset.
+
 Una vez hecho esto podemos pasar a la parte de modelos, lo primero que haremos será dividir el conjunto de datos entre entrenamiento y test.
 
 ```{r}
@@ -521,7 +534,7 @@ fTR2_eval <- fTR2
 fTS2_eval <- fTS2
 ```
 
-\newpage 
+
 
 Una vez definido tanto el conjunto de entrenamiento como el de test realizaremos un modelo sencillo para ver cómo se comporta todo, este será una regresión logística. A su vez también usaremos como método de control un cross-validation con un fold de 10.
 
@@ -568,7 +581,7 @@ Podemos observar que este modelo tiene un accuracy aproximado de 0.97 con un hip
 A continuación veremos que variables son importantes, donde entrarán también en juego aquellas variables las cuales tengan relaciones no lineales con nuestro output.
 
 
-```{r, fig.align='center',fig.cap="Importancia de variables", fig.dim=c(5,3.2)}
+```{r, fig.align='center',fig.cap="Importancia de variables", fig.dim=c(6,4)}
 plot(varImp(tree2.fit,scale = FALSE))
 ```
 
@@ -597,6 +610,8 @@ Veamos como esta construido nuestro modelo de arbol de decisión:
 ```{r,fig.align='center', fig.cap= "Estructura Arbol de Decisión"}
 rpart.plot(tree2_1.fit$finalModel, type = 2, fallen.leaves = FALSE, box.palette = "Oranges")
 ```
+
+\newpage 
 
 Por último haremos como en el caso de la regresión logística, donde representamos graficamente la predicción frente a los valores reales de cada observación.
 
